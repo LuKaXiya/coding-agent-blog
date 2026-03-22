@@ -1,19 +1,19 @@
 title: AI 编程实战笔记
 description: 后端程序员的 AI 协同开发实战指南
 theme: minima
-plugins:
-  - jekyll-feed
-  - jekyll-seo-tag
+
+markdown: kramdown
+highlighter: rouge
 
 permalink: /posts/:title/
 
-markdown: kramdown
-kramdown:
-  syntax_highlighter: rouge
+collections:
+  posts:
+    output: true
 
 defaults:
   - scope:
-      path: ""
-      type: "posts"
+      path: "_posts"
+      type: posts
     values:
-      layout: "post"
+      layout: post
