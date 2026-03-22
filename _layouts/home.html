@@ -208,7 +208,31 @@
       from { opacity: 0; transform: translateY(5px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    /* 右侧边栏 - 默认隐藏，hover 时显示 */
+    /* 右侧边栏 - 滑出式设计 */
+    .right-sidebar-trigger {
+      position: fixed;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px;
+      height: 80px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 10px 0 0 10px;
+      cursor: pointer;
+      z-index: 101;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.3s;
+    }
+    .right-sidebar-trigger:hover {
+      opacity: 0.8;
+    }
+    .right-sidebar-trigger::before {
+      content: ">";
+      color: white;
+      font-weight: bold;
+    }
     .right-sidebar {
       position: fixed;
       right: 0;
@@ -219,8 +243,12 @@
       transition: width 0.3s ease;
       z-index: 100;
     }
-    .right-sidebar:hover, .right-sidebar.show {
+    .right-sidebar:hover, .right-sidebar.visible {
       width: 280px;
+    }
+    .right-sidebar-trigger.hidden {
+      opacity: 0;
+      pointer-events: none;
     }
     .right-sidebar-inner {
       width: 280px;
@@ -228,7 +256,7 @@
       height: 100vh;
       overflow-y: auto;
       background: white;
-      box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+      box-shadow: -2px 0 15px rgba(0,0,0,0.15);
     }
     .sidebar-card {
       background: white;
@@ -288,6 +316,7 @@
     }
     /* 响应式 */
     @media (max-width: 1200px) {
+      .right-sidebar-trigger { display: none; }
       .right-sidebar { display: none; }
     }
     @media (max-width: 768px) {
@@ -386,8 +415,11 @@
       </div>
     </main>
     
-    <!-- 右侧边栏 - hover 显示 -->
-    <aside class="right-sidebar">
+    <!-- 右侧边栏触发器 -->
+    <div class="right-sidebar-trigger" id="sidebarTrigger"></div>
+    
+    <!-- 右侧边栏 -->
+    <aside class="right-sidebar" id="rightSidebar">
       <div class="right-sidebar-inner">
         <div class="sidebar-card">
           <h3>🏷️ 内容分类</h3>
@@ -421,6 +453,8 @@
     const filterButtons = document.querySelectorAll('.nav-filter');
     const articleItems = document.querySelectorAll('.article-item');
     const listTitle = document.getElementById('list-title');
+    const sidebarTrigger = document.getElementById('sidebarTrigger');
+    const rightSidebar = document.getElementById('rightSidebar');
 
     const categoryNames = {
       'all': '全部文章',
@@ -431,6 +465,28 @@
       '多Agent': '多 Agent',
       '深度思考': '深度思考'
     };
+
+    // 右侧栏显示/隐藏
+    let sidebarVisible = false;
+    sidebarTrigger.addEventListener('click', () => {
+      sidebarVisible = !sidebarVisible;
+      if (sidebarVisible) {
+        rightSidebar.classList.add('visible');
+        sidebarTrigger.classList.add('hidden');
+        sidebarTrigger.innerHTML = '<';
+      } else {
+        rightSidebar.classList.remove('visible');
+        sidebarTrigger.classList.remove('hidden');
+        sidebarTrigger.innerHTML = '>';
+      }
+    });
+
+    rightSidebar.addEventListener('mouseleave', () => {
+      sidebarVisible = false;
+      rightSidebar.classList.remove('visible');
+      sidebarTrigger.classList.remove('hidden');
+      sidebarTrigger.innerHTML = '>';
+    });
 
     filterButtons.forEach(btn => {
       btn.addEventListener('click', (e) => {
