@@ -10,7 +10,7 @@ title: AI 编程实战笔记
 ## 最新文章
 
 {% for post in site.posts %}
-- *{{ post.date | date: "%Y-%m-%d" }}* [{{ post.title }}]({{ post.url }})
+- *{{ post.date | date: "%Y-%m-%d" }}* [{{ post.title }}]({{ site.baseurl }}{{ post.url }})
 {% endfor %}
 
 ---

@@ -1,11 +1,13 @@
 title: AI 编程实战笔记
 description: 后端程序员的 AI 协同开发实战指南
+baseurl: /coding-agent-blog
+url: https://lukaxiya.github.io
 theme: minima
 
 markdown: kramdown
 highlighter: rouge
 
-permalink: /posts/:title/
+permalink: /coding-agent-blog/posts/:title/
 
 collections:
   posts:
