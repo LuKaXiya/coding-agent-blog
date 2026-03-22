@@ -1,0 +1,14 @@
+_site/
+.sass-cache/
+.jekyll-cache/
+.jekyll-metadata
+vendor/bundle/
+vendor/cache/
+vendor/gems/
+vendor/ruby/
+*.gem
+ Gemfile.lock
+.DS_Store
+*.swp
+*.swo
+*~

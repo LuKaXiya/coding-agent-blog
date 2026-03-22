@@ -1,6 +1,52 @@
-# 🧠 CCG 模式：用 AI 协同提升编程效率
+# 🧠 AI 编程实战笔记
 
 > 后端程序员的 AI 协同开发实战指南
+
+---
+
+## 🌐 GitHub Pages
+
+本博客已配置 GitHub Pages，访问地址：
+**https://LuKaXiya.github.io/coding-agent-blog/**
+
+博客文章位于 `_posts/` 目录，使用 Jekyll 格式编写。
+
+### 本地预览
+
+```bash
+# 安装依赖
+bundle install
+
+# 本地预览
+bundle exec jekyll serve
+
+# 然后访问 http://localhost:4000
+```
+
+### 发布新文章
+
+```bash
+# 1. 在 _posts/ 目录创建新文章
+# 文件名格式：YYYY-MM-DD-标题.md
+
+# 2. 文件开头添加 front matter：
+---
+layout: post
+title: "文章标题"
+date: 2026-03-22
+---
+
+# 3. 推送到 GitHub，GitHub Pages 会自动构建
+```
+
+### 同步脚本
+
+新文章可以同时同步到根目录：
+```bash
+bash _scripts/sync-post.sh <源文件.md> "<标题>"
+```
+
+---
 
 ---
 
