@@ -2,9 +2,6 @@
 
 > 从入门到精通：如何用扩展生态让 Claude Code 效率翻倍
 
-[![Claude Code](https://img.shields.io/badge/Claude-Code-blue?style=social&logo=anthropic)](https://docs.anthropic.com/claude-code)
-[![MCP](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-green?style=social)](https://modelcontextprotocol.io/)
-
 ---
 
 ## 📖 目录
@@ -98,13 +95,6 @@ pip install mcp-server-filesystem
     "filesystem": {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/allowed/dir"]
-    },
-    "github": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-github"],
-      "env": {
-        "GITHUB_TOKEN": "your-token-here"
-      }
     }
   }
 }
@@ -118,53 +108,55 @@ pip install mcp-server-filesystem
 
 **功能**：让 AI 读写指定目录
 
-```bash
-npx -y @modelcontextprotocol/server-filesystem /your/project/path
-```
-
 **使用场景**：
 - 读取项目文件分析代码结构
 - 批量修改文件
 - 生成文件树
 
+```bash
+npx -y @modelcontextprotocol/server-filesystem /your/project/path
+```
+
 ### 2. 🐙 Git (`@modelcontextprotocol/server-git`)
 
 **功能**：Git 操作、changelog 生成、分支分析
+
+**使用场景**：
+- 自动生成 CHANGELOG
+- 分析开发进度
+- 管理分支
 
 ```bash
 npx -y @modelcontextprotocol/server-git /your/project/path
 ```
 
-**示例 Prompt**：
-```
-分析这个仓库最近 30 天的 commit 情况，生成一份开发总结
-```
+**示例 Prompt**：`分析这个仓库最近 30 天的 commit 情况，生成一份开发总结`
 
 ### 3. 📦 GitHub (`@modelcontextprotocol/server-github`)
 
 **功能**：Issues、PRs、Repos 操作
+
+**使用场景**：
+- 查看和管理 Issues
+- 审核 PRs
+- 自动更新状态
 
 ```bash
 npx -y @modelcontextprotocol/server-github
 # 需要 GITHUB_TOKEN 环境变量
 ```
 
-**示例 Prompt**：
-```
-查看我的所有 open issues，按优先级排序
-```
-
 ### 4. 🌲 1Password (`@modelcontextprotocol/server-1password`)
 
 **功能**：安全获取密钥，永不硬编码
 
+**使用场景**：
+- 从 1Password 获取 AWS credentials
+- 获取数据库密码
+- 安全注入敏感信息
+
 ```bash
 npx -y @modelcontextprotocol/server-1password
-```
-
-**使用**：
-```
-从 1Password 获取我的 AWS credentials 用于部署
 ```
 
 ### 5. ☁️ AWS (`@modelcontextprotocol/server-aws`)
@@ -182,6 +174,21 @@ npx -y @modelcontextprotocol/server-aws
 ```bash
 npm install -g kubernetes-mcp-server
 ```
+
+---
+
+## 📦 按场景选插件
+
+| 你的需求 | 推荐插件 |
+|---------|---------|
+| 读写项目文件 | `server-filesystem` |
+| Git 操作、生成 changelog | `server-git` |
+| 管理 Issues 和 PRs | `server-github` |
+| 安全获取密钥 | `server-1password` |
+| 操作 AWS 资源 | `server-aws` |
+| 管理 Kubernetes | `kubernetes-mcp-server` |
+| 操作数据库 | `server-sqlite` 或社区数据库 MCP |
+| 发送通知 | `server-slack` 或 `server-email` |
 
 ---
 
@@ -218,16 +225,6 @@ npm install -g kubernetes-mcp-server
     "git": {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-git", "."]
-    },
-    "aws": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-aws"],
-      "description": "AWS 资源管理"
-    },
-    "1password": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-1password"],
-      "description": "密钥管理"
     }
   }
 }
@@ -247,12 +244,11 @@ ANTHROPIC_API_KEY=sk-ant-xxxxx
 
 ## 🛠️ 自定义 MCP Server
 
-有时候官方插件不够用，可以自己写：
+有时候官方插件不够用，可以自己写。
 
 ### 1. 创建 MCP Server (Node.js)
 
 ```typescript
-// mcp-server-mytool.ts
 import { MCPServer } from '@modelcontextprotocol/sdk/server';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server-stdio';
 import { CallToolRequestSchema } from '@modelcontextprotocol/sdk/types';
@@ -272,22 +268,15 @@ const server = new MCPServer({
         required: ['action', 'service']
       },
       handler: async ({ action, service }) => {
-        // 实现逻辑
         return {
-          content: [
-            {
-              type: 'text',
-              text: `Service ${service}: ${action.toUpperCase()} executed`
-            }
-          ]
+          content: [{ type: 'text', text: `Service ${service}: ${action} done` }]
         };
       }
     }
   }
 });
 
-const transport = new StdioServerTransport();
-server.connect(transport);
+server.connect(new StdioServerTransport());
 ```
 
 ### 2. 注册到 Claude Code
@@ -301,12 +290,6 @@ server.connect(transport);
     }
   }
 }
-```
-
-### 3. 使用自定义工具
-
-```
-用 myCustomTool 启动 nginx 服务
 ```
 
 ---
@@ -347,7 +330,7 @@ server.connect(transport);
 
 ### 3. MCP Server 热重载
 
-修改 `.claudirc` 后不需要重启 Claude Code：
+修改 `.clauderc` 后不需要重启 Claude Code：
 
 ```
 /reload
