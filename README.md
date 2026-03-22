@@ -263,6 +263,7 @@ Opus 给出详细的方案对比，包括性能、成本、团队熟悉度等。
 - [AI测试工具大全](./ai-testing-tools.md)
 - [Claude Code插件体系](./claude-code-plugins.md)
 - [用 AI 做代码审查](./ai-code-review.md)
+- [MCP 深度指南：从协议原理到自定义 Server 实战](./mcp-protocol-deep-dive.md)
 
 ---
 
