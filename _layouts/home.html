@@ -72,8 +72,11 @@
       font-size: 0.95rem;
     }
     .nav-links a:hover, .nav-links a.active {
-      background: rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.15);
       color: white;
+    }
+    .nav-links a.active {
+      border-left: 3px solid #667eea;
     }
     .nav-links a .emoji {
       font-size: 1.1rem;
@@ -185,6 +188,25 @@
     }
     .article-item:hover .article-arrow {
       opacity: 1;
+    }
+    .article-category-tag {
+      font-size: 0.75rem;
+      background: #f0f0f5;
+      color: #888;
+      padding: 0.2rem 0.5rem;
+      border-radius: 10px;
+      min-width: 70px;
+      text-align: center;
+    }
+    .article-item.hidden {
+      display: none;
+    }
+    .article-item.filtered {
+      animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
     }
     /* 右侧边栏 - 默认隐藏，hover 时显示 */
     .right-sidebar {
@@ -300,7 +322,7 @@
       <div class="nav-section">
         <div class="nav-title">导航</div>
         <ul class="nav-links">
-          <li><a href="{{ site.baseurl }}/" class="active"><span class="emoji">🏠</span> <span>首页</span></a></li>
+          <li><a href="{{ site.baseurl }}/"><span class="emoji">🏠</span> <span>首页</span></a></li>
           <li><a href="{{ site.baseurl }}/about"><span class="emoji">📖</span> <span>关于</span></a></li>
         </ul>
       </div>
@@ -308,11 +330,13 @@
       <div class="nav-section">
         <div class="nav-title">内容分类</div>
         <ul class="nav-links">
-          <li><a href="#"><span class="emoji">🤖</span> <span>AI 编程工具</span></a></li>
-          <li><a href="#"><span class="emoji">🔧</span> <span>测试自动化</span></a></li>
-          <li><a href="#"><span class="emoji">🧠</span> <span>需求分析</span></a></li>
-          <li><a href="#"><span class="emoji">🌐</span> <span>MCP 生态</span></a></li>
-          <li><a href="#"><span class="emoji">⚙️</span> <span>多 Agent</span></a></li>
+          <li><a href="#" data-filter="all" class="nav-filter active"><span class="emoji">📋</span> <span>全部文章</span></a></li>
+          <li><a href="#" data-filter="AI编程工具" class="nav-filter"><span class="emoji">🤖</span> <span>AI 编程工具</span></a></li>
+          <li><a href="#" data-filter="测试自动化" class="nav-filter"><span class="emoji">🔧</span> <span>测试自动化</span></a></li>
+          <li><a href="#" data-filter="需求分析" class="nav-filter"><span class="emoji">🧠</span> <span>需求分析</span></a></li>
+          <li><a href="#" data-filter="MCP生态" class="nav-filter"><span class="emoji">🌐</span> <span>MCP 生态</span></a></li>
+          <li><a href="#" data-filter="多Agent" class="nav-filter"><span class="emoji">⚙️</span> <span>多 Agent</span></a></li>
+          <li><a href="#" data-filter="深度思考" class="nav-filter"><span class="emoji">💡</span> <span>深度思考</span></a></li>
         </ul>
       </div>
       
@@ -349,12 +373,13 @@
         </div>
       </div>
       
-      <div class="section-title">📚 最新文章</div>
-      <div class="article-list">
+      <div class="section-title">📚 <span id="list-title">全部文章</span></div>
+      <div class="article-list" id="article-list">
         {% for post in site.posts %}
-        <div class="article-item">
+        <div class="article-item" data-category="{{ post.category }}">
           <span class="article-date">{{ post.date | date: "%Y-%m-%d" }}</span>
           <a href="{{ site.baseurl }}{{ post.url }}" class="article-title">{{ post.title }}</a>
+          <span class="article-category-tag">{{ post.category }}</span>
           <span class="article-arrow">→</span>
         </div>
         {% endfor %}
@@ -391,5 +416,47 @@
       </div>
     </aside>
   </div>
+
+  <script>
+    const filterButtons = document.querySelectorAll('.nav-filter');
+    const articleItems = document.querySelectorAll('.article-item');
+    const listTitle = document.getElementById('list-title');
+
+    const categoryNames = {
+      'all': '全部文章',
+      'AI编程工具': 'AI 编程工具',
+      '测试自动化': '测试自动化',
+      '需求分析': '需求分析',
+      'MCP生态': 'MCP 生态',
+      '多Agent': '多 Agent',
+      '深度思考': '深度思考'
+    };
+
+    filterButtons.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const filter = btn.getAttribute('data-filter');
+
+        // Update active state
+        filterButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // Update list title
+        listTitle.textContent = categoryNames[filter] || '全部文章';
+
+        // Filter articles
+        articleItems.forEach(item => {
+          const category = item.getAttribute('data-category');
+          if (filter === 'all' || category === filter) {
+            item.classList.remove('hidden');
+            item.classList.add('filtered');
+          } else {
+            item.classList.add('hidden');
+            item.classList.remove('filtered');
+          }
+        });
+      });
+    });
+  </script>
 </body>
 </html>

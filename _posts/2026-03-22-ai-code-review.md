@@ -2,6 +2,8 @@
 layout: post
 title: "🤖 用 AI 做代码审查：PR 审核、CodeQL 集成、安全扫描实战指南"
 date: 2026-03-22
+category: 测试自动化
+tags: ["AI", "代码审查", "CodeQL", "安全扫描"]
 ---
 
 

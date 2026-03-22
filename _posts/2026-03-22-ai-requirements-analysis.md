@@ -2,6 +2,8 @@
 layout: post
 title: "AI 时代的精准需求分析：从模糊到清晰的艺术"
 date: 2026-03-22
+category: 需求分析
+tags: ["AI", "需求分析", "进阶"]
 ---
 
 

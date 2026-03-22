@@ -2,6 +2,8 @@
 layout: post
 title: "MCP 深度指南：从协议原理到自定义 Server 实战"
 date: 2026-03-22
+category: MCP生态
+tags: ["MCP", "协议", "自定义Server"]
 ---
 
 

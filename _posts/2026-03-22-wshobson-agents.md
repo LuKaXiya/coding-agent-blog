@@ -2,6 +2,8 @@
 layout: post
 title: "Claude Code 的终极插件系统：wshobson/agents 深度解析"
 date: 2026-03-22
+category: AI编程工具
+tags: ["Claude Code", "插件", "wshobson"]
 ---
 
 

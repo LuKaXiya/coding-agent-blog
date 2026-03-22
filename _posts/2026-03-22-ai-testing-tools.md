@@ -2,6 +2,8 @@
 layout: post
 title: "🧪 AI 测试工具：让测试工程师效率翻倍的实战指南"
 date: 2026-03-22
+category: 测试自动化
+tags: ["AI", "测试工具", "自动化测试"]
 ---
 
 

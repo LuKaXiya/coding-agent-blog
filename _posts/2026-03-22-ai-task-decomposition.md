@@ -2,6 +2,8 @@
 layout: post
 title: "AI 任务分解全景：从用户故事到并行执行的艺术"
 date: 2026-03-22
+category: 需求分析
+tags: ["AI", "任务分解", "工作流"]
 ---
 
 

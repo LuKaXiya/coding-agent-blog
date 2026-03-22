@@ -2,6 +2,8 @@
 layout: post
 title: "mini-SWE-agent：100 行代码如何击败了大多数 Agent 框架"
 date: 2026-03-22
+category: AI编程工具
+tags: ["Agent", "极简设计", "SWE-bench"]
 ---
 
 

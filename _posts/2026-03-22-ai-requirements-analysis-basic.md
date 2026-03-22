@@ -2,6 +2,8 @@
 layout: post
 title: "AI需求分析：当你不知道这个需求该怎么实现时"
 date: 2026-03-22
+category: 需求分析
+tags: ["AI", "需求分析", "基础"]
 ---
 
 

@@ -2,6 +2,8 @@
 layout: post
 title: 'MCP 生态爆发：聚合层崛起，AI 编程工具进入大一统时代'
 date: 2026-03-22
+category: MCP生态
+tags: ["MCP", "生态", "聚合器"]
 ---
 
 

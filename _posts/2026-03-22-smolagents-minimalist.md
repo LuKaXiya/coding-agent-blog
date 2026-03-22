@@ -2,6 +2,8 @@
 layout: post
 title: "极简主义回归：smolagents 用 1000 行代码重新定义 Agent 框架"
 date: 2026-03-22
+category: AI编程工具
+tags: ["smolagents", "极简", "HuggingFace"]
 ---
 
 
