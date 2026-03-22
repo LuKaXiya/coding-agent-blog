@@ -310,6 +310,7 @@ Opus 给出详细的方案对比，包括性能、成本、团队熟悉度等。
 - [Claude Code插件体系](./claude-code-plugins.md)
 - [用 AI 做代码审查](./ai-code-review.md)
 - [MCP 深度指南：从协议原理到自定义 Server 实战](./mcp-protocol-deep-dive.md)
+- [CLAUDE.md 完全指南：让 AI 准确理解你的项目](./claude-md-configuration-guide.md)
 
 ---
 
