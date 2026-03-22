@@ -9,7 +9,7 @@ title: AI 编程实战笔记
 
 ## 最新文章
 
-{% for post in site.posts limit:10 %}
+{% for post in site.posts %}
 - *{{ post.date | date: "%Y-%m-%d" }}* [{{ post.title }}]({{ post.url }})
 {% endfor %}
 
@@ -24,9 +24,3 @@ title: AI 编程实战笔记
 - 🧠 **需求分析与任务分解**：如何让 AI 更好地理解需求
 - 🌐 **MCP 生态**：Model Context Protocol 插件系统
 - ⚙️ **多 Agent 协作**：多 Agent 系统的设计与实现
-
-## 目录
-
-{% for post in site.posts %}
-1. [{{ post.title }}]({{ post.url }}) — {{ post.date | date: "%Y-%m-%d" }}
-{% endfor %}
