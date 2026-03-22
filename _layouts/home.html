@@ -6,26 +6,198 @@
   <link rel="icon" type="image/svg+xml" href="{{ site.baseurl }}/favicon.svg">
   <title>{{ page.title }} - AI 编程实战笔记</title>
   <style>
+    * { box-sizing: border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      max-width: 800px;
+      max-width: 900px;
       margin: 0 auto;
-      padding: 2rem;
+      padding: 0;
       line-height: 1.6;
       color: #333;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
     }
-    h1 { color: #1a1a1a; }
-    h2 { color: #333; border-bottom: 1px solid #eee; padding-bottom: 0.5rem; }
-    a { color: #0066cc; text-decoration: none; }
-    a:hover { color: #0055aa; text-decoration: underline; }
-    .post-list { list-style: none; padding: 0; }
-    .post-list li { margin: 0.5em 0; }
-    .post-list a { font-size: 1.1em; }
-    .post-list .date { color: #888; font-size: 0.9em; }
-    .back-link { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #eee; color: #888; }
+    .container {
+      background: #fff;
+      min-height: 100vh;
+      padding: 0;
+    }
+    .hero {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 3rem 2rem;
+      text-align: center;
+    }
+    .hero h1 {
+      color: white;
+      font-size: 2.2rem;
+      margin: 0 0 0.5rem 0;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .hero p {
+      color: rgba(255,255,255,0.9);
+      font-size: 1.1rem;
+      margin: 0;
+    }
+    .hero-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 1rem;
+    }
+    .content {
+      padding: 2rem;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    h2 {
+      color: #333;
+      border-bottom: 2px solid #667eea;
+      padding-bottom: 0.5rem;
+      margin-top: 2rem;
+      font-size: 1.4rem;
+    }
+    .post-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .post-list li {
+      margin: 0;
+      border-bottom: 1px solid #eee;
+    }
+    .post-list li:last-child {
+      border-bottom: none;
+    }
+    .post-list a {
+      display: flex;
+      align-items: center;
+      padding: 1rem 0;
+      color: #333;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .post-list a:hover {
+      color: #667eea;
+      padding-left: 0.5rem;
+    }
+    .post-list .date {
+      color: #888;
+      font-size: 0.85rem;
+      min-width: 100px;
+    }
+    .post-list .title {
+      font-size: 1.05rem;
+      flex: 1;
+    }
+    .post-list .arrow {
+      color: #667eea;
+      font-size: 1.2rem;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .post-list a:hover .arrow {
+      opacity: 1;
+    }
+    .categories {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin: 1rem 0;
+    }
+    .category-tag {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 0.3rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+    }
+    .footer {
+      text-align: center;
+      padding: 2rem;
+      color: #888;
+      font-size: 0.9rem;
+      border-top: 1px solid #eee;
+      margin-top: 2rem;
+    }
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin: 1.5rem 0;
+    }
+    .stat-item {
+      text-align: center;
+    }
+    .stat-number {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #667eea;
+    }
+    .stat-label {
+      font-size: 0.85rem;
+      color: #888;
+    }
   </style>
 </head>
 <body>
-  {{ content }}
+  <div class="container">
+    <div class="hero">
+      <svg class="hero-icon" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="aiGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#ffffff"/>
+            <stop offset="100%" style="stop-color:#e0e0e0"/>
+          </linearGradient>
+        </defs>
+        <circle cx="32" cy="28" r="12" fill="none" stroke="url(#aiGrad2)" stroke-width="2.5"/>
+        <circle cx="32" cy="28" r="4" fill="url(#aiGrad2)"/>
+        <path d="M20 42 Q32 50 44 42" stroke="url(#aiGrad2)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <circle cx="22" cy="26" r="2" fill="url(#aiGrad2)" opacity="0.7"/>
+        <circle cx="42" cy="26" r="2" fill="url(#aiGrad2)" opacity="0.7"/>
+        <path d="M26 18 L28 12 L32 15 L36 12 L38 18" stroke="url(#aiGrad2)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <h1>AI 编程实战笔记</h1>
+      <p>🤖 后端程序员的 AI 协同开发实战指南</p>
+      <div class="stats">
+        <div class="stat-item">
+          <div class="stat-number">{{ site.posts | size }}</div>
+          <div class="stat-label">篇文章</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">5</div>
+          <div class="stat-label">大主题</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="content">
+      <h2>📚 最新文章</h2>
+      <ul class="post-list">
+        {% for post in site.posts %}
+        <li>
+          <a href="{{ site.baseurl }}{{ post.url }}">
+            <span class="date">{{ post.date | date: "%Y-%m-%d" }}</span>
+            <span class="title">{{ post.title }}</span>
+            <span class="arrow">→</span>
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+      
+      <h2>🏷️ 内容分类</h2>
+      <div class="categories">
+        <span class="category-tag">🤖 AI 编程工具</span>
+        <span class="category-tag">🔧 测试自动化</span>
+        <span class="category-tag">🧠 需求分析</span>
+        <span class="category-tag">🌐 MCP 生态</span>
+        <span class="category-tag">⚙️ 多 Agent</span>
+      </div>
+      
+      <div class="footer">
+        <p>📝 由 AI 辅助编写 | 持续学习与分享</p>
+        <p>GitHub: <a href="https://github.com/LuKaXiya/coding-agent-blog" style="color:#667eea;">LuKaXiya/coding-agent-blog</a></p>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
