@@ -5,37 +5,15 @@ plugins:
   - jekyll-feed
   - jekyll-seo-tag
 
-permalink: /:title/
+permalink: /posts/:title/
 
 markdown: kramdown
 kramdown:
   syntax_highlighter: rouge
 
-minima:
-  skin: dark
-  author: LuKaXiya
-  social:
-    github: LuKaXiya
-    twitter: LuKaXiya
-
-header-pages:
-  - index.md
-  - about.md
-
-collections:
-  posts:
-    title: Posts
-    output: true
-    permalink: /posts/:path/
-
 defaults:
   - scope:
-      path: "_posts"
-      type: posts
+      path: ""
+      type: "posts"
     values:
-      layout: post
-      permalink: /posts/:title/
-  - scope:
-      path: "docs"
-    values:
-      layout: page
+      layout: "post"
