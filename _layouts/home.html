@@ -6,198 +6,371 @@
   <link rel="icon" type="image/svg+xml" href="{{ site.baseurl }}/favicon.svg">
   <title>{{ page.title }} - AI 编程实战笔记</title>
   <style>
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 0;
       line-height: 1.6;
       color: #333;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: #f5f5f5;
       min-height: 100vh;
     }
-    .container {
-      background: #fff;
+    .layout {
+      display: flex;
       min-height: 100vh;
-      padding: 0;
     }
+    /* 左侧导航 */
+    .sidebar {
+      width: 260px;
+      background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+      color: white;
+      padding: 2rem 1.5rem;
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+    }
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .sidebar-logo svg {
+      width: 40px;
+      height: 40px;
+    }
+    .sidebar-logo span {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+    .nav-section {
+      margin-bottom: 1.5rem;
+    }
+    .nav-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      color: #888;
+      letter-spacing: 1px;
+      margin-bottom: 0.75rem;
+    }
+    .nav-links {
+      list-style: none;
+    }
+    .nav-links li {
+      margin-bottom: 0.25rem;
+    }
+    .nav-links a {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 0.75rem;
+      color: rgba(255,255,255,0.8);
+      text-decoration: none;
+      border-radius: 8px;
+      transition: all 0.2s;
+      font-size: 0.95rem;
+    }
+    .nav-links a:hover, .nav-links a.active {
+      background: rgba(255,255,255,0.1);
+      color: white;
+    }
+    .nav-links a .emoji {
+      font-size: 1.1rem;
+    }
+    .sidebar-footer {
+      margin-top: auto;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      font-size: 0.8rem;
+      color: #666;
+    }
+    .sidebar-footer a {
+      color: #888;
+      text-decoration: none;
+    }
+    .sidebar-footer a:hover {
+      color: white;
+    }
+    /* 主内容区 */
+    .main {
+      flex: 1;
+      margin-left: 260px;
+      padding: 2rem 3rem;
+      max-width: 1200px;
+    }
+    /* Hero 区域 */
     .hero {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 16px;
+      padding: 2.5rem;
       color: white;
-      padding: 3rem 2rem;
-      text-align: center;
+      margin-bottom: 2rem;
     }
     .hero h1 {
       color: white;
-      font-size: 2.2rem;
-      margin: 0 0 0.5rem 0;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      font-size: 1.8rem;
+      margin-bottom: 0.5rem;
     }
     .hero p {
       color: rgba(255,255,255,0.9);
-      font-size: 1.1rem;
-      margin: 0;
+      font-size: 1rem;
     }
-    .hero-icon {
-      width: 80px;
-      height: 80px;
-      margin: 0 auto 1rem;
+    .hero-stats {
+      display: flex;
+      gap: 2rem;
+      margin-top: 1.5rem;
     }
-    .content {
-      padding: 2rem;
-      max-width: 800px;
-      margin: 0 auto;
+    .hero-stat {
+      text-align: center;
     }
-    h2 {
+    .hero-stat-number {
+      font-size: 1.8rem;
+      font-weight: bold;
+    }
+    .hero-stat-label {
+      font-size: 0.85rem;
+      opacity: 0.8;
+    }
+    /* 文章列表 */
+    .section-title {
+      font-size: 1.2rem;
       color: #333;
-      border-bottom: 2px solid #667eea;
-      padding-bottom: 0.5rem;
-      margin-top: 2rem;
-      font-size: 1.4rem;
-    }
-    .post-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-    .post-list li {
-      margin: 0;
-      border-bottom: 1px solid #eee;
-    }
-    .post-list li:last-child {
-      border-bottom: none;
-    }
-    .post-list a {
+      margin-bottom: 1rem;
       display: flex;
       align-items: center;
-      padding: 1rem 0;
+      gap: 0.5rem;
+    }
+    .article-list {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .article-item {
+      display: flex;
+      align-items: center;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid #f0f0f0;
+      transition: background 0.2s;
+    }
+    .article-item:last-child {
+      border-bottom: none;
+    }
+    .article-item:hover {
+      background: #f8f9ff;
+    }
+    .article-date {
+      font-size: 0.85rem;
+      color: #888;
+      min-width: 90px;
+    }
+    .article-title {
+      flex: 1;
       color: #333;
       text-decoration: none;
-      transition: all 0.2s;
     }
-    .post-list a:hover {
+    .article-title:hover {
       color: #667eea;
-      padding-left: 0.5rem;
     }
-    .post-list .date {
-      color: #888;
-      font-size: 0.85rem;
-      min-width: 100px;
-    }
-    .post-list .title {
-      font-size: 1.05rem;
-      flex: 1;
-    }
-    .post-list .arrow {
+    .article-arrow {
       color: #667eea;
-      font-size: 1.2rem;
       opacity: 0;
       transition: opacity 0.2s;
     }
-    .post-list a:hover .arrow {
+    .article-item:hover .article-arrow {
       opacity: 1;
     }
-    .categories {
+    /* 右侧边栏 */
+    .right-sidebar {
+      width: 280px;
+      padding: 2rem 1.5rem;
+      position: fixed;
+      right: 0;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+    .sidebar-card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .sidebar-card h3 {
+      font-size: 0.9rem;
+      color: #333;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .tag-list {
       display: flex;
       flex-wrap: wrap;
       gap: 0.5rem;
-      margin: 1rem 0;
     }
-    .category-tag {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: 0.3rem 0.8rem;
+    .tag {
+      background: #f0f0f5;
+      color: #666;
+      padding: 0.35rem 0.75rem;
       border-radius: 20px;
+      font-size: 0.8rem;
+      transition: all 0.2s;
+    }
+    .tag:hover {
+      background: #667eea;
+      color: white;
+    }
+    .about-card p {
       font-size: 0.85rem;
+      color: #666;
+      line-height: 1.6;
     }
-    .footer {
-      text-align: center;
-      padding: 2rem;
-      color: #888;
-      font-size: 0.9rem;
-      border-top: 1px solid #eee;
-      margin-top: 2rem;
-    }
-    .stats {
+    .social-links {
       display: flex;
+      gap: 0.75rem;
+    }
+    .social-link {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #f0f0f5;
+      display: flex;
+      align-items: center;
       justify-content: center;
-      gap: 2rem;
-      margin: 1.5rem 0;
+      text-decoration: none;
+      transition: all 0.2s;
+      font-size: 1rem;
     }
-    .stat-item {
-      text-align: center;
+    .social-link:hover {
+      background: #667eea;
     }
-    .stat-number {
-      font-size: 2rem;
-      font-weight: bold;
-      color: #667eea;
+    /* 响应式 */
+    @media (max-width: 1200px) {
+      .right-sidebar { display: none; }
     }
-    .stat-label {
-      font-size: 0.85rem;
-      color: #888;
+    @media (max-width: 768px) {
+      .sidebar { width: 60px; padding: 1rem 0.5rem; }
+      .sidebar-logo span, .nav-title, .nav-links a span:not(.emoji), .sidebar-footer { display: none; }
+      .main { margin-left: 60px; padding: 1rem; }
+      .hero { padding: 1.5rem; }
+      .hero h1 { font-size: 1.4rem; }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="hero">
-      <svg class="hero-icon" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <linearGradient id="aiGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style="stop-color:#ffffff"/>
-            <stop offset="100%" style="stop-color:#e0e0e0"/>
-          </linearGradient>
-        </defs>
-        <circle cx="32" cy="28" r="12" fill="none" stroke="url(#aiGrad2)" stroke-width="2.5"/>
-        <circle cx="32" cy="28" r="4" fill="url(#aiGrad2)"/>
-        <path d="M20 42 Q32 50 44 42" stroke="url(#aiGrad2)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-        <circle cx="22" cy="26" r="2" fill="url(#aiGrad2)" opacity="0.7"/>
-        <circle cx="42" cy="26" r="2" fill="url(#aiGrad2)" opacity="0.7"/>
-        <path d="M26 18 L28 12 L32 15 L36 12 L38 18" stroke="url(#aiGrad2)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      <h1>AI 编程实战笔记</h1>
-      <p>🤖 后端程序员的 AI 协同开发实战指南</p>
-      <div class="stats">
-        <div class="stat-item">
-          <div class="stat-number">{{ site.posts | size }}</div>
-          <div class="stat-label">篇文章</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-number">5</div>
-          <div class="stat-label">大主题</div>
-        </div>
+  <div class="layout">
+    <!-- 左侧导航 -->
+    <nav class="sidebar">
+      <div class="sidebar-logo">
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="navGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#667eea"/>
+              <stop offset="100%" style="stop-color:#764ba2"/>
+            </linearGradient>
+          </defs>
+          <rect width="64" height="64" rx="12" fill="url(#navGrad)"/>
+          <circle cx="32" cy="28" r="10" fill="none" stroke="white" stroke-width="2.5"/>
+          <circle cx="32" cy="28" r="3" fill="white"/>
+          <path d="M22 40 Q32 47 42 40" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        </svg>
+        <span>AI 编程笔记</span>
       </div>
-    </div>
+      
+      <div class="nav-section">
+        <div class="nav-title">导航</div>
+        <ul class="nav-links">
+          <li><a href="{{ site.baseurl }}/" class="active"><span class="emoji">🏠</span> <span>首页</span></a></li>
+          <li><a href="{{ site.baseurl }}/about"><span class="emoji">📖</span> <span>关于</span></a></li>
+        </ul>
+      </div>
+      
+      <div class="nav-section">
+        <div class="nav-title">内容分类</div>
+        <ul class="nav-links">
+          <li><a href="#"><span class="emoji">🤖</span> <span>AI 编程工具</span></a></li>
+          <li><a href="#"><span class="emoji">🔧</span> <span>测试自动化</span></a></li>
+          <li><a href="#"><span class="emoji">🧠</span> <span>需求分析</span></a></li>
+          <li><a href="#"><span class="emoji">🌐</span> <span>MCP 生态</span></a></li>
+          <li><a href="#"><span class="emoji">⚙️</span> <span>多 Agent</span></a></li>
+        </ul>
+      </div>
+      
+      <div class="nav-section">
+        <div class="nav-title">资源</div>
+        <ul class="nav-links">
+          <li><a href="https://github.com/LuKaXiya/coding-agent-blog" target="_blank"><span class="emoji">📦</span> <span>GitHub</span></a></li>
+        </ul>
+      </div>
+      
+      <div class="sidebar-footer">
+        <p>由 AI 辅助编写</p>
+      </div>
+    </nav>
     
-    <div class="content">
-      <h2>📚 最新文章</h2>
-      <ul class="post-list">
+    <!-- 主内容 -->
+    <main class="main">
+      <div class="hero">
+        <h1>🤖 AI 编程实战笔记</h1>
+        <p>后端程序员的 AI 协同开发实战指南，涵盖工具使用、自动化测试、需求分析等核心主题</p>
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <div class="hero-stat-number">{{ site.posts | size }}</div>
+            <div class="hero-stat-label">篇文章</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-number">5</div>
+            <div class="hero-stat-label">大主题</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-number">∞</div>
+            <div class="hero-stat-label">持续更新</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="section-title">📚 最新文章</div>
+      <div class="article-list">
         {% for post in site.posts %}
-        <li>
-          <a href="{{ site.baseurl }}{{ post.url }}">
-            <span class="date">{{ post.date | date: "%Y-%m-%d" }}</span>
-            <span class="title">{{ post.title }}</span>
-            <span class="arrow">→</span>
-          </a>
-        </li>
+        <div class="article-item">
+          <span class="article-date">{{ post.date | date: "%Y-%m-%d" }}</span>
+          <a href="{{ site.baseurl }}{{ post.url }}" class="article-title">{{ post.title }}</a>
+          <span class="article-arrow">→</span>
+        </div>
         {% endfor %}
-      </ul>
-      
-      <h2>🏷️ 内容分类</h2>
-      <div class="categories">
-        <span class="category-tag">🤖 AI 编程工具</span>
-        <span class="category-tag">🔧 测试自动化</span>
-        <span class="category-tag">🧠 需求分析</span>
-        <span class="category-tag">🌐 MCP 生态</span>
-        <span class="category-tag">⚙️ 多 Agent</span>
+      </div>
+    </main>
+    
+    <!-- 右侧边栏 -->
+    <aside class="right-sidebar">
+      <div class="sidebar-card">
+        <h3>🏷️ 内容分类</h3>
+        <div class="tag-list">
+          <span class="tag">🤖 AI 编程</span>
+          <span class="tag">🔧 测试</span>
+          <span class="tag">🧠 需求分析</span>
+          <span class="tag">🌐 MCP</span>
+          <span class="tag">⚙️ Multi-Agent</span>
+          <span class="tag">🔥 Claude</span>
+          <span class="tag">💻 Cursor</span>
+        </div>
       </div>
       
-      <div class="footer">
-        <p>📝 由 AI 辅助编写 | 持续学习与分享</p>
-        <p>GitHub: <a href="https://github.com/LuKaXiya/coding-agent-blog" style="color:#667eea;">LuKaXiya/coding-agent-blog</a></p>
+      <div class="sidebar-card about-card">
+        <h3>👤 关于博客</h3>
+        <p>专注 AI 辅助编程的实战经验分享，帮助后端工程师提升开发效率。每篇文章都是实战经验总结，干货满满 💪</p>
       </div>
-    </div>
+      
+      <div class="sidebar-card">
+        <h3>🔗 关注我</h3>
+        <div class="social-links">
+          <a href="https://github.com/LuKaXiya/coding-agent-blog" class="social-link" title="GitHub">🐙</a>
+        </div>
+      </div>
+    </aside>
   </div>
 </body>
 </html>
