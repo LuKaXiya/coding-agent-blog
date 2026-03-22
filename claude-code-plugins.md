@@ -1,400 +1,233 @@
-# 🔌 Claude Code 插件体系大全
+# Claude Code 插件体系：MCP 不只是"连接外部工具"
 
-> 从入门到精通：如何用扩展生态让 Claude Code 效率翻倍
-
----
-
-## 📖 目录
-
-- [🤔 为什么需要插件？](#-为什么需要插件)
-- [🔧 MCP 架构解析](#-mcp-架构解析)
-- [🚀 快速开始](#-快速开始)
-- [📦 必备插件推荐](#-必备插件推荐)
-- [💻 配置与集成](#-配置与集成)
-- [🛠️ 自定义 MCP Server](#-自定义-mcp-server)
-- [⚡ 高级技巧](#-高级技巧)
-- [🐛 常见问题](#-常见问题)
+> 理解 MCP 的真正价值，以及什么时候你其实不需要它。
 
 ---
 
-## 🤔 为什么需要插件？
+## MCP 解决了什么问题
 
-Claude Code 本身已经很强，但插件可以：
+很多人装 MCP 就是因为"别人说有用"。
 
-| 能力 | 原生支持 | 插件扩展 |
-|------|----------|----------|
-| 代码补全 | ✅ 基础 | ✅ 高级语义补全 |
-| 数据库操作 | ❌ | ✅ 直接查询 SQL/NoSQL |
-| API 调用 | ❌ | ✅ 轻松接入第三方服务 |
-| 文件处理 | ✅ 基础 | ✅ 云存储、压缩、批处理 |
-| Git 操作 | ✅ 基础 | ✅ 高级分支分析、changelog |
-| 外部工具 | ❌ | ✅ 1Password、Kubernetes、AWS |
+但你有没有想过：**MCP 解决的是什么根本问题？**
 
----
+**答案是：上下文不够的问题。**
 
-## 🔧 MCP 架构解析
+Claude Code 再强，它的上下文只有你给它的东西。如果你每次都需要手动复制粘贴信息给它，它的效率就大打折扣。
 
-**MCP (Model Context Protocol)** 是 Anthropic 推出的开放协议，让 AI 能无缝调用外部工具。
-
-### 架构图
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                    Claude Code / Claude                 │
-└──────────────────────┬──────────────────────────────────┘
-                       │ MCP Protocol
-        ┌──────────────┼──────────────┐
-        ▼              ▼              ▼
-   ┌─────────┐   ┌─────────┐   ┌─────────┐
-   │  MCP    │   │  MCP    │   │  MCP    │
-   │ Server  │   │ Server  │   │ Server  │
-   │ (Files) │   │ (Git)   │   │ (Cloud) │
-   └─────────┘   └─────────┘   └─────────┘
-```
-
-### MCP vs 传统 API 调用
-
-| 对比项 | 传统 API | MCP |
-|--------|----------|-----|
-| 连接方式 | 手动写 HTTP | 自动发现、标准化 |
-| 认证 | 每次手动处理 | 可配置持久化 |
-| 错误处理 | 各自实现 | 统一协议 |
-| 工具定义 | 自定义格式 | JSON Schema |
+MCP 让 Claude Code 直接连接外部系统，自动获取上下文。
 
 ---
 
-## 🚀 快速开始
+## 什么情况下 MCP 真的有用
 
-### 1. 查看已安装的 MCP
+### 场景一：你需要反复查询同一个系统
 
-```bash
-# 列出可用的 MCP servers
-claude mcp list
+```
+不用 MCP：
+1. 打开 Jira，看某个 ticket 状态
+2. 复制 ticket 内容
+3. 粘贴给 Claude Code
+4. 让 Claude Code 分析
 
-# 状态检查
-claude mcp status
+用 MCP：
+1. "帮我分析这个 Jira ticket：PROJ-123"
+2. Claude Code 自动查询 Jira，获取 ticket 内容
+3. 直接分析
 ```
 
-### 2. 安装官方 MCP Server
+如果你每天都要重复做"查系统 → 复制 → 粘贴给 Claude"这件事，MCP 就有价值。
 
-```bash
-# 通过 npm 安装
-npm install -g @modelcontextprotocol/server-filesystem
-npm install -g @modelcontextprotocol/server-github
-npm install -g @modelcontextprotocol/server-git
+### 场景二：你需要跨系统关联信息
 
-# 安装 Python 版本
-pip install mcp-server-filesystem
+```
+"帮我看看这个用户在我们的系统和支付系统里的所有相关记录"
+→ Claude Code 自动查两个系统，关联数据
 ```
 
-### 3. 配置 `.clauderc`
+### 场景三：你需要 Claude Code 执行系统操作
 
-```json
-{
-  "mcpServers": {
-    "filesystem": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/allowed/dir"]
-    }
-  }
-}
+```
+"帮我创建这个 Jira ticket"
+"帮我合并这个 PR"
+"帮我查一下这个 Lambda 的日志"
 ```
 
 ---
 
-## 📦 必备插件推荐
+## 什么情况下 MCP 是过度设计
 
-### 1. 📁 文件系统 (`@modelcontextprotocol/server-filesystem`)
+**如果你只是偶尔查一次数据，手动复制粘贴就够了。**
 
-**功能**：让 AI 读写指定目录
+安装和配置 MCP 有成本：
+- 配置时间
+- 维护（Token 会过期、权限会变）
+- 调试（出问题排查麻烦）
 
-**使用场景**：
-- 读取项目文件分析代码结构
-- 批量修改文件
-- 生成文件树
+**用一个 MCP 的前提：你节省的时间 > 配置和维护的成本。**
 
-```bash
-npx -y @modelcontextprotocol/server-filesystem /your/project/path
+---
+
+## 实用的 MCP 工具推荐
+
+### 文件系统（几乎人人需要）
+
+**用途**：让 Claude Code 能读写指定目录
+
+适合场景：
+- 项目分散在多个目录
+- 需要 Claude Code 管理文件结构
+
+### GitHub（如果你每天用 GitHub）
+
+**用途**：查询 Issue、PR、代码库状态
+
+适合场景：
+- Code Review
+- 追踪项目进度
+- 自动化生成 Changelog
+
+### 1Password（团队安全规范要求）
+
+**用途**：获取密钥但不暴露
+
+适合场景：
+- 部署时需要配置密钥
+- 不希望密钥出现在代码或日志中
+
+### AWS（云开发者）
+
+**用途**：查询资源、查看日志
+
+适合场景：
+- 排查线上问题
+- 资源管理
+
+---
+
+## 配置 MCP 的正确方式
+
+### 第一步：先想清楚要不要装
+
+```
+问题：我的日常工作流中，有哪些是"查系统 → 复制 → 粘贴"这种模式？
+频率：每天 3 次以下 → 不需要 MCP
+      每天 10 次以上 → 强烈推荐
 ```
 
-### 2. 🐙 Git (`@modelcontextprotocol/server-git`)
+### 第二步：从最小配置开始
 
-**功能**：Git 操作、changelog 生成、分支分析
+不要一次配一堆。先配一个，用一周，看效果。
 
-**使用场景**：
-- 自动生成 CHANGELOG
-- 分析开发进度
-- 管理分支
+### 第三步：注意 Token 安全
 
-```bash
-npx -y @modelcontextprotocol/server-git /your/project/path
+```
+❌ 错误：
+.clauderc 里直接写 token
+
+✅ 正确：
+用环境变量，或者 1Password 集成
 ```
 
-**示例 Prompt**：`分析这个仓库最近 30 天的 commit 情况，生成一份开发总结`
+### 第四步：定期检查权限
 
-### 3. 📦 GitHub (`@modelcontextprotocol/server-github`)
+MCP 的权限是你给它的。要定期检查：
+- 这个 MCP Server 真的需要这么多权限吗？
+- Token 是不是已经不用了但配置还在？
 
-**功能**：Issues、PRs、Repos 操作
+---
 
-**使用场景**：
-- 查看和管理 Issues
-- 审核 PRs
-- 自动更新状态
+## 调试 MCP 的正确方式
 
-```bash
-npx -y @modelcontextprotocol/server-github
-# 需要 GITHUB_TOKEN 环境变量
+### 问题一：MCP 返回的结果不对
+
+**排查思路**：
+1. MCP Server 本身有没有问题？（单独测试 MCP）
+2. 返回的数据格式对吗？
+3. Claude Code 理解返回结果的方式对吗？
+
+```
+# 测试 MCP Server 是否正常
+claude mcp test --server <name>
 ```
 
-### 4. 🌲 1Password (`@modelcontextprotocol/server-1password`)
+### 问题二：Claude Code 不会用 MCP
 
-**功能**：安全获取密钥，永不硬编码
+**原因**：Claude Code 不一定会主动调用 MCP。需要你明确告诉它。
 
-**使用场景**：
-- 从 1Password 获取 AWS credentials
-- 获取数据库密码
-- 安全注入敏感信息
-
-```bash
-npx -y @modelcontextprotocol/server-1password
 ```
-
-### 5. ☁️ AWS (`@modelcontextprotocol/server-aws`)
-
-**功能**：S3 操作、Lambda 调用、EC2 管理
-
-```bash
-npx -y @modelcontextprotocol/server-aws
-```
-
-### 6. ☸️ Kubernetes (`kubernetes-mcp-server`)
-
-**功能**：集群管理、Pod 监控、日志查看
-
-```bash
-npm install -g kubernetes-mcp-server
+"请用 GitHub MCP 查询这个仓库的最近 5 个 closed PR"
+      ↑
+ 明确告诉它用哪个工具
 ```
 
 ---
 
-## 📦 按场景选插件
+## MCP 的局限性
 
-| 你的需求 | 推荐插件 |
-|---------|---------|
-| 读写项目文件 | `server-filesystem` |
-| Git 操作、生成 changelog | `server-git` |
-| 管理 Issues 和 PRs | `server-github` |
-| 安全获取密钥 | `server-1password` |
-| 操作 AWS 资源 | `server-aws` |
-| 管理 Kubernetes | `kubernetes-mcp-server` |
-| 操作数据库 | `server-sqlite` 或社区数据库 MCP |
-| 发送通知 | `server-slack` 或 `server-email` |
+### 局限性一：MCP Server 的质量参差不齐
 
----
+不是所有 MCP Server 都做得好。有的返回数据格式混乱，有的错误处理不完善。
 
-## 💻 配置与集成
+**建议**：先测试再依赖。
 
-### 完整 `.clauderc` 示例
+### 局限性二：MCP 有延迟
 
-```json
-{
-  "permissions": {
-    "allow": [
-      "read:all",
-      "write:all",
-      "exec:all",
-      "browser:all"
-    ]
-  },
-  "mcpServers": {
-    "filesystem": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "./projects"],
-      "description": "项目文件访问"
-    },
-    "github": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-github"],
-      "env": {
-        "GITHUB_TOKEN": {
-          "type": "env",
-          "name": "GITHUB_TOKEN"
-        }
-      }
-    },
-    "git": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-git", "."]
-    }
-  }
-}
-```
+每次调用 MCP 都有网络延迟。如果你的 Prompt 需要快速迭代，频繁调用 MCP 会很慢。
 
-### 环境变量配置
+**建议**：批量查询，不要频繁单次调用。
 
-```bash
-# .env 文件
-GITHUB_TOKEN=ghp_xxxxx
-AWS_ACCESS_KEY_ID=AKIAxxxxx
-AWS_SECRET_ACCESS_KEY=xxxxx
-ANTHROPIC_API_KEY=sk-ant-xxxxx
-```
+### 局限性三：MCP 的错误难以排查
+
+如果 MCP 返回错误，你需要同时排查：
+- MCP Server 端
+- MCP Client 端（Claude Code）
+- 网络问题
+
+**建议**：保留日志，便于排查。
 
 ---
 
-## 🛠️ 自定义 MCP Server
+## 替代方案：不用 MCP 也能做
 
-有时候官方插件不够用，可以自己写。
+### 替代一：直接给上下文
 
-### 1. 创建 MCP Server (Node.js)
+如果你只是偶尔需要查数据，直接复制粘贴可能更简单。
 
-```typescript
-import { MCPServer } from '@modelcontextprotocol/sdk/server';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server-stdio';
-import { CallToolRequestSchema } from '@modelcontextprotocol/sdk/types';
+```
+不用 MCP：30 秒复制粘贴
+安装配置 MCP：30 分钟
 
-const server = new MCPServer({
-  name: 'mytool-mcp',
-  version: '1.0.0',
-  tools: {
-    myCustomTool: {
-      description: '执行自定义工具',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          action: { type: 'string', enum: ['start', 'stop', 'status'] },
-          service: { type: 'string' }
-        },
-        required: ['action', 'service']
-      },
-      handler: async ({ action, service }) => {
-        return {
-          content: [{ type: 'text', text: `Service ${service}: ${action} done` }]
-        };
-      }
-    }
-  }
-});
-
-server.connect(new StdioServerTransport());
+如果你只查一次，MCP 反而是浪费。
 ```
 
-### 2. 注册到 Claude Code
+### 替代二：用 API 脚本
 
-```json
-{
-  "mcpServers": {
-    "mytool": {
-      "command": "node",
-      "args": ["./mcp-server-mytool.js"]
-    }
-  }
-}
+如果你需要的操作比较固定，可以写一个简单的脚本：
+
 ```
+#!/bin/bash
+# 查 Jira ticket 的简单脚本
+curl -u user:token https://jira.com/rest/api/2/issue/$1
+```
+
+Claude Code 可以直接调用脚本，不需要 MCP。
 
 ---
 
-## ⚡ 高级技巧
+## 总结
 
-### 1. 多工作区配置
+**MCP 不是必须的。** 它解决的是"频繁跨系统操作"的问题。
 
-```json
-{
-  "workspaces": {
-    "primary": "./projects/main",
-    "secondary": [
-      "./projects/shared-lib",
-      "./projects/common-utils"
-    ]
-  }
-}
-```
+如果你每天都在做"查系统 → 复制 → 粘贴"这件事，MCP 值得装。
 
-### 2. 工具权限控制
+如果你只是偶尔查一次数据，手动复制粘贴就够了。
 
-```json
-{
-  "permissions": {
-    "allow": [
-      "read:projects/**",
-      "write:projects/**",
-      "exec:projects/**/*.sh"
-    ],
-    "deny": [
-      "exec:sudo *",
-      "write:~/.ssh/**"
-    ]
-  }
-}
-```
-
-### 3. MCP Server 热重载
-
-修改 `.clauderc` 后不需要重启 Claude Code：
-
-```
-/reload
-```
-
-### 4. 调试 MCP
-
-```bash
-# 查看 MCP 日志
-claude mcp debug
-
-# 测试特定 server
-claude mcp test --server github
-```
+**先想清楚你的工作流，再决定要不要用 MCP。**
 
 ---
 
-## 🐛 常见问题
-
-### Q: MCP Server 启动失败？
-
-```bash
-# 检查依赖
-npm list @modelcontextprotocol/sdk
-
-# 确认 Node 版本
-node --version  # 需要 >= 18
-```
-
-### Q: 权限被拒绝？
-
-```json
-{
-  "permissions": {
-    "allow": ["read:./**", "write:./**"]
-  }
-}
-```
-
-### Q: GitHub Token 失效？
-
-确保 Token 有 `repo` 权限，刷新后更新环境变量。
-
-### Q: 如何卸载 MCP Server？
-
-从 `.clauderc` 删除对应配置即可。
-
----
-
-## 🔗 相关资源
+## 相关资源
 
 - [MCP 官方文档](https://modelcontextprotocol.io/)
-- [MCP SDK](https://github.com/modelcontextprotocol/sdk)
-- [官方 MCP Servers](https://github.com/modelcontextprotocol/servers)
-- [Anthropic Cookbook](https://github.com/anthropics/anthropic-cookbook)
-
----
-
-## 📝 下一步
-
-- [ ] 搭建私有 MCP Server（连接内部系统）
-- [ ] MCP Server 安全加固
-- [ ] MCP 性能优化
-
----
-
-*有问题？欢迎提交 Issue！*
+- [MCP Server 列表](https://github.com/modelcontextprotocol/servers)
+- [Claude Code 官方文档](https://docs.anthropic.com/claude-code)
