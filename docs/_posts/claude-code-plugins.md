@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Claude Code 插件体系：MCP 不只是"连接外部工具""
+title: "Claude Code 插件体系：MCP 不只是「连接外部工具」"
 date: 2026-03-22
 ---
 
