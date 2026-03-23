@@ -9,6 +9,32 @@ highlighter: rouge
 
 permalink: /posts/:title/
 
+# 网站分类配置（导航栏和主题数量均引用此处）
+categories:
+  - name: AI编程工具
+    emoji: 🤖
+    filter: AI编程工具
+  - name: Claude Code
+    emoji: 🛠️
+    filter: Claude Code
+  - name: 测试自动化
+    emoji: 🔧
+    filter: 测试自动化
+  - name: 需求分析
+    emoji: 🧠
+    filter: 需求分析
+  - name: MCP生态
+    emoji: 🌐
+    filter: MCP生态
+  - name: 多Agent
+    emoji: ⚙️
+    filter: 多Agent
+  - name: 深度思考
+    emoji: 💡
+    filter: 深度思考
+
+theme_count: 7
+
 collections:
   posts:
     output: true
