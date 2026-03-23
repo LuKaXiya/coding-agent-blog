@@ -7,7 +7,7 @@ theme: minima
 markdown: kramdown
 highlighter: rouge
 
-permalink: /coding-agent-blog/posts/:title/
+permalink: /posts/:title/
 
 collections:
   posts:
