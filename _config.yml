@@ -10,7 +10,7 @@ highlighter: rouge
 permalink: /posts/:title/
 
 # 网站分类配置（导航栏和主题数量均引用此处）
-categories:
+site_categories:
   - name: AI编程工具
     emoji: 🤖
     filter: AI编程工具
@@ -32,8 +32,6 @@ categories:
   - name: 深度思考
     emoji: 💡
     filter: 深度思考
-
-theme_count: 7
 
 collections:
   posts:

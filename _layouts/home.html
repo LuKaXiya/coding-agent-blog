@@ -360,7 +360,7 @@
         <div class="nav-title">内容分类</div>
         <ul class="nav-links">
           <li><a href="#" data-filter="all" class="nav-filter active"><span class="emoji">📋</span> <span>全部文章</span></a></li>
-          {% for cat in site.categories %}
+          {% for cat in site.site_categories %}
           <li><a href="#" data-filter="{{ cat.filter }}" class="nav-filter"><span class="emoji">{{ cat.emoji }}</span> <span>{{ cat.name }}</span></a></li>
           {% endfor %}
         </ul>
@@ -389,7 +389,7 @@
             <div class="hero-stat-label">篇文章</div>
           </div>
           <div class="hero-stat">
-            <div class="hero-stat-number">{{ site.categories | size }}</div>
+            <div class="hero-stat-number">{{ site.site_categories | size }}</div>
             <div class="hero-stat-label">大主题</div>
           </div>
           <div class="hero-stat">
@@ -421,7 +421,7 @@
         <div class="sidebar-card">
           <h3>🏷️ 内容分类</h3>
           <div class="tag-list">
-            {% for cat in site.categories %}
+            {% for cat in site.site_categories %}
             <span class="tag">{{ cat.emoji }} {{ cat.name }}</span>
             {% endfor %}
           </div>
@@ -451,7 +451,7 @@
 
     const categoryNames = {
       'all': '全部文章'
-      {% for cat in site.categories %},
+      {% for cat in site.site_categories %},
       '{{ cat.filter }}': '{{ cat.name }}'
       {% endfor %}
     };
