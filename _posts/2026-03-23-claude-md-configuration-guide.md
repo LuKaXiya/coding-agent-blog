@@ -2,7 +2,7 @@
 layout: post
 title: "CLAUDE.md 完全指南：让 AI 准确理解你的项目"
 date: 2026-03-23
-category: Claude Code
+category: AI编程工具
 tags: ["Claude Code", "配置", "CLAUDE.md", ".clauderc", "最佳实践"]
 ---
 

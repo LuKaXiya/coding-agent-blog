@@ -2,7 +2,7 @@
 layout: post
 title: "Claude Code 高级 CLI 模式：print / repl / resume 的产品化实战"
 date: 2026-03-23
-category: Claude Code
+category: AI编程工具
 tags: ["Claude Code", "CLI", "CI/CD", "自动化", "生产环境"]
 ---
 

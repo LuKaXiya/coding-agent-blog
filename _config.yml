@@ -14,9 +14,6 @@ site_categories:
   - name: AI编程工具
     emoji: 🤖
     filter: AI编程工具
-  - name: Claude Code
-    emoji: 🛠️
-    filter: Claude Code
   - name: 测试自动化
     emoji: 🔧
     filter: 测试自动化
@@ -32,6 +29,9 @@ site_categories:
   - name: 深度思考
     emoji: 💡
     filter: 深度思考
+  - name: Agent治理
+    emoji: 🛡️
+    filter: Agent治理
 
 collections:
   posts:
