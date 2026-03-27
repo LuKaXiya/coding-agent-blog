@@ -2,7 +2,7 @@
 layout: post
 title: "🤖 Claude Cowork：Anthropic 的 AI 同事来了，程序员和办公族同时变天"
 date: 2026-03-24
-category: AI工具
+category: AI编程工具
 tags: ["Claude", "Claude Cowork", "Claude Opus 4.6", "AI协作", "多智能体"]
 ---
 

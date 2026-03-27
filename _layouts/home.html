@@ -426,6 +426,16 @@
             {% endfor %}
           </div>
         </div>
+
+        <div class="sidebar-card">
+          <h3>🔖 热门标签</h3>
+          <div class="tag-list">
+            {% assign sorted_tags = site.tags | sort %}
+            {% for tag in sorted_tags limit: 18 %}
+            <span class="tag">#{{ tag[0] }}</span>
+            {% endfor %}
+          </div>
+        </div>
         
         <div class="sidebar-card about-card">
           <h3>👤 关于博客</h3>
