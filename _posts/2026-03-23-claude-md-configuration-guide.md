@@ -1,695 +1,579 @@
 ---
 layout: post
-title: "CLAUDE.md 完全指南：让 AI 准确理解你的项目"
-date: 2026-03-23
+title: "Claude Code 配置工程实战：CLAUDE.md、settings.json、Skills、MCP 应该怎么分层"
+date: 2026-03-23 21:30:00 +0800
 category: AI编程工具
-tags: ["Claude Code", "配置", "CLAUDE.md", ".clauderc", "最佳实践"]
+tags: ["Claude Code", "CLAUDE.md", "settings.json", "Skills", "MCP", "最佳实践"]
 ---
 
-> CLAUDE.md 写得好不好，直接决定 Claude Code 能不能真正帮你高效工作。
+> 很多人以为自己在“配置 Claude Code”，其实只是写了一个 `CLAUDE.md`。这在早期够用，但到了真正的工程实战阶段，已经远远不够了。
 
----
+最近重新梳理 Claude Code 官方文档后，我对它的配置体系有了一个更明确的判断：
 
-## 📖 目录
+**Claude Code 的重点已经不是“某一个配置文件怎么写”，而是“不同层级的配置应该各放在哪”。**
 
-- [🤔 三个配置文件，到底什么区别](#-三个配置文件到底什么区别)
-- [📝 CLAUDE.md 的正确打开方式](#-claude-md-的正确打开方式)
-- [⚙️ 不同项目类型的配置示例](#-不同项目类型的配置示例)
-- [🔧 .clauderc 完整配置项详解](#-clauderc-完整配置项详解)
-- [⚠️ 常见配置错误和解决方案](#-常见配置错误和解决方案)
-- [👥 团队共享配置策略](#-团队共享配置策略)
-- [🚀 进阶：环境差异化配置](#-进阶环境差异化配置)
+如果这个边界没想清楚，就会反复出现几类问题：
 
----
+- 项目规范写进个人配置，切项目就互相污染；
+- 团队规则写进本地配置，别人根本复现不了；
+- 明明只是想复用一个工作流，却还在用过时的 alias 思路；
+- 安全底线没放到高优先级作用域，结果谁都能覆盖；
+- `CLAUDE.md` 越写越长，最后既不稳定，也不好维护。
 
-## 🤔 三个配置文件，到底什么区别
+所以这篇文章不再把重点放在“单独讲 CLAUDE.md”，而是从工程角度讲透 5 个问题：
 
-很多人把三个配置混着用，结果发现 Claude Code "不听话"。
+1. Claude Code 现在到底有哪些配置层
+2. `CLAUDE.md`、`settings.json`、Skills、MCP 各自负责什么
+3. 团队共享规则和个人偏好应该如何分层
+4. 哪些旧习惯已经不适合现在的 Claude Code
+5. Java 后端团队落地时，一套更稳的目录结构该怎么设计
 
-先搞清楚每个文件的定位：
-
-| 文件 | 作用域 | 存储位置 | 内容类型 | 修改频率 |
-|------|--------|---------|---------|---------|
-| **CLAUDE.md** | 项目级 | 项目根目录 | 项目上下文、代码规范、工作流 | 每个项目创建一次 |
-| **.clauderc** | 用户级 | 项目根目录 | CLI 行为配置、快捷命令 | 几乎不变 |
-| **~/.claude/mcp.json** | 用户级 | home 目录 | MCP Server 连接配置 | 按需添加 |
-
-### 三个文件的典型内容
-
-**CLAUDE.md** — 回答"这个项目是什么，应该怎么做"：
-```
-这个项目是电商后端，使用 Java 17 + Spring Boot 3。
-所有 API 必须有 @ApiOperation 注解。
-事务在 Service 层管理。
-```
-
-**.clauderc** — 回答"Claude Code 默认怎么工作"：
-```json
-{
-  "model": "sonnet",
-  "timeout": 120,
-  "prompt": "你是一个专业的 Java 后端工程师"
-}
-```
-
-**~/.claude/mcp.json** — 回答"AI 能调用哪些外部工具"：
-```json
-{
-  "mcpServers": {
-    "github": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-github"]
-    }
-  }
-}
-```
-
-### 核心原则
-
-> **项目规范 → CLAUDE.md**
-> **工具行为 → .clauderc**
-> **外部工具 → MCP 配置**
-
-把项目代码规范写到 `.clauderc` 里，切换项目时就会互相污染。把 MCP 配置写到项目根目录，AI 就不理解你在做什么。搞清楚每个文件的职责，是正确配置的第一步。
+如果你现在还把 Claude Code 的配置理解成“写个项目说明 + 配几个命令”，这篇文章会帮你把整个模型重新理顺。
 
 ---
 
-## 📝 CLAUDE.md 的正确打开方式
+## 一、先纠正一个最常见的误区：Claude Code 已经不是 `.clauderc` 时代了
 
-### CLAUDE.md 被加载的时机
+先讲结论：
 
-Claude Code 启动时，会自动从当前目录向上查找 `CLAUDE.md` 文件，找到第一个就加载。
+> **现在 Claude Code 的官方配置主轴，是 `settings.json + scoped config + skills + MCP`，而不是一个包打天下的 `.clauderc`。**
 
-```
-/projects/
-├── CLAUDE.md              ← 找到这个，加载停止
-│   └── ecommerce/
-│       └── CLAUDE.md      ← 不会加载，因为父目录已有
-```
+这点非常重要，因为很多中文资料还停留在“项目里放一个 `.clauderc`，再写个 `CLAUDE.md`”的阶段。这样讲并不是完全错误，但已经不能准确反映今天 Claude Code 的配置体系。
 
-这意味着你在 `ecommerce/` 子目录工作时，Claude Code 用的是 `/projects/CLAUDE.md` 的规范，而不是 `/projects/ecommerce/CLAUDE.md`。
+按照现在更清晰的官方模型，配置至少分成下面几类：
 
-### CLAUDE.md 的内容结构
+- `CLAUDE.md`：给 Claude 的长期项目说明、约束和工作方式
+- `settings.json`：权限、默认模式、环境变量、Hooks 等系统行为
+- `skills/`：可复用的工作流与能力封装
+- `agents/`：可委派的专职子 Agent
+- MCP 配置：让 Claude 能接入外部系统
 
-一个高质量的 CLAUDE.md 应该按这个顺序组织：
+也就是说，现在真正有价值的问题已经从：
 
-```
-1. 项目概述（一句话说明项目是什么）
-2. 技术栈（让 AI 知道用什么语言/框架）
-3. 代码规范（AI 要遵守的规则）
-4. 工作流（分支策略、Commit 规范、PR 要求）
-5. 架构决策（关键的技术选择和约束）
-6. 禁止事项（AI 绝对不能做的事）
-```
+- “配置文件怎么写？”
 
-**示例：**
+变成了：
 
-```markdown
-# 订单履约系统
+- “什么东西应该写进哪一层？”
 
-处理电商订单的履约流程，支持创建、支付、发货、退款全链路。
-
-## 技术栈
-
-- Java 17 + Spring Boot 3.2
-- PostgreSQL 15 + Redis 7
-- MyBatis-Plus 3.5
-- Kafka 3.6（事件总线）
-
-## 代码规范
-
-- 命名：Java 用 camelCase，数据库表/字段用 snake_case
-- 日志：使用 Slf4j（log.info/warn/error），禁止 System.out
-- 异常：必须捕获并转换，禁止吞异常
-  - Service 层：自定义业务异常（BusinessException）
-  - Controller 层：统一异常处理器返回 API 错误码
-- 单元测试：覆盖率 > 70%，使用 JUnit 5 + Mockito
-
-## 工作流
-
-- 分支命名：feature/xxx, fix/xxx, hotfix/xxx
-- Commit 格式：<type>(<scope>): <message>
-  - type: feat, fix, docs, style, refactor, test, chore
-- PR 要求：必须通过 CI（单元测试 + 集成测试）
-
-## 架构决策
-
-- 事务边界：Service 层开启，@Transactional(readOnly = true) 用于查询
-- 缓存策略：读多写少用 Redis，读写都频繁不用缓存
-- API 规范：RESTful，/api/v1/ 前缀，统一响应 {code, message, data}
-- ID 生成：使用 Snowflake 算法，禁止自增 ID 暴露
-
-## 禁止事项
-
-- ❌ 不要在 Controller 写业务逻辑
-- ❌ 不要直接操作数据库（必须通过 Mapper/Repository）
-- ❌ 不要硬编码配置（使用 @Value 或@ConfigurationProperties）
-- ❌ 不要绕过鉴权直接访问内部接口
-```
-
-### CLAUDE.md 的黄金法则
-
-**法则一：简洁再简洁**
-
-Claude Code 对配置有截断机制。超过一定长度，后面的内容会被忽略。
-
-实际测试：
-- 500 行以内：基本完整加载
-- 1000 行：后半部分可能被截断
-- 2000 行：大量内容丢失
-
-**建议**：把最重要的 5 条规范放最前面。如果规范很多，按优先级分批写。
-
-**法则二：具体而非抽象**
-
-```
-❌ 不好："代码要写好"
-✅ 好："每个 public 方法必须有 Javadoc，格式：
-/**
- * 方法功能描述
- * @param paramName 参数说明
- * @return 返回值说明
- */"
-
-❌ 不好："注意性能"
-✅ 好："数据库查询必须走索引，单次查询 < 50ms（可监控）"
-```
-
-**法则三：告诉 AI 验收标准**
-
-AI 不知道你满意的标准是什么。你要明确说出来：
-
-```
-✅ 好："API 响应时间必须 < 200ms"
-✅ 好："所有对外接口必须有幂等处理"
-✅ 好："新增功能必须同步更新 README 相关说明"
-```
-
-**法则四：按项目类型定制**
-
-不同项目，CLAUDE.md 的侧重点完全不同：
-
-| 项目类型 | 重点内容 |
-|---------|---------|
-| **Java 后端** | 事务边界、异常处理、数据库规范、API 规范 |
-| **React 前端** | 组件规范、状态管理、样式规范、API 调用方式 |
-| **Python 数据** | 依赖管理、数据处理规范、笔记本规范 |
-| **全栈项目** | API 契约、前后端边界、共享类型定义 |
+这就是配置工程化的起点。
 
 ---
 
-## ⚙️ 不同项目类型的配置示例
+## 二、先理解作用域：Claude Code 不是只有“全局”和“项目”两层
 
-### Java Spring Boot 后端
+很多人配置总出问题，不是因为不会写 JSON，而是因为对 **scope** 没概念。
 
-```markdown
-# XXX 订单服务
+Claude Code 现在的配置作用域，可以概括成四层：
 
-## 技术栈
-- Java 17, Spring Boot 3.2, Spring MVC
-- MyBatis-Plus 3.5, PostgreSQL 15
-- Redis 7（缓存）, Kafka 3.6（事件）
+| 作用域 | 典型位置 | 谁会受到影响 | 是否共享 |
+|---|---|---|---|
+| Managed | 系统托管 / MDM / 受管控配置 | 机器上的所有用户 | 是 |
+| User | `~/.claude/` | 你自己，跨所有项目 | 否 |
+| Project | `.claude/` / 项目根配置 | 这个仓库的所有协作者 | 是 |
+| Local | `.claude/settings.local.json` | 你自己在这个仓库里 | 否 |
 
-## 核心规范
+这四层不是摆设，它直接决定一条配置该放哪里。
 
-### 异常处理
-- 业务异常：throw new BusinessException("E001", "用户不存在")
-- 禁止：catch (Exception e) { e.printStackTrace(); }
-- Controller 通过 GlobalExceptionHandler 统一处理
+### 1）Managed：安全底线和企业级强制策略
 
-### 事务管理
-- @Transactional 默认 readOnly = false
-- 查询方法显式标注 readOnly = true
-- 事务超时：timeout = 5（秒）
+这一层最像“组织规则”。
 
-### API 规范
-- 路径：/api/v1/{resource}
-- 响应：{code: string, message: string, data: object}
-- 分页：GET /api/v1/orders?page=1&size=20
-- 错误码：E开头（如 E001），详见 error-codes.md
+适合放：
 
-### 日志
-- 使用 Slf4j：log.info("orderId={}, status={}", id, status)
-- 禁止：System.out, e.printStackTrace()
-- 敏感信息：禁止写入日志（密码、Token、手机号）
+- 绝对不能访问的敏感路径
+- 绝对不能放开的危险命令
+- 组织级合规要求
+- 必须统一的策略约束
 
-### 测试
-- 单元测试：Service 层，JUnit 5 + Mockito
-- 集成测试：使用 @SpringBootTest
-- 覆盖率：核心业务 > 70%
+如果某条规则是“任何人在任何项目里都不能绕过”，那它就不该放在 User，更不该放在 Local。
 
-## 禁止事项
-- ❌ Controller 禁止写业务逻辑
-- ❌ 禁止 SQL 拼接（必须用 MyBatis 参数化查询）
-- ❌ 禁止硬编码魔法值（必须用常量或配置）
-```
+### 2）User：你的个人长期偏好
 
-### React + TypeScript 前端
+适合放：
 
-```markdown
-# XXX 管理后台前端
+- 你希望在所有项目里都保持一致的偏好
+- 你自己的工具链习惯
+- 你个人常用的全局技能
+- 与你机器相关、但不适合共享给团队的设置
 
-## 技术栈
-- React 18, TypeScript 5, Vite 5
-- Ant Design 5（UI 组件库）
-- React Query（服务端状态）
-- Zustand（客户端状态）
+这一层的关键词是：**长期、个人、跨项目**。
 
-## 组件规范
+### 3）Project：团队共同遵守的工程规则
 
-### 文件结构
-```
-src/
-├── components/       # 通用组件
-│   └── Button/
-│       ├── index.tsx
-│       └── index.less
-├── pages/           # 页面组件
-├── hooks/           # 自定义 Hooks
-├── utils/           # 工具函数
-└── types/           # TypeScript 类型定义
-```
+这是最容易产生价值的一层。
 
-### 命名规范
-- 组件：PascalCase（如 UserList.tsx）
-- 工具函数：camelCase（如 formatDate.ts）
-- CSS 类名：BEM 风格（如 user-list__item--active）
+适合放：
 
-### API 调用
-- 使用 React Query 的 useQuery/useMutation
-- 禁止在组件内直接 fetch
-- 错误处理：统一拦截，展示 Toast
+- 团队共享的 permissions / hooks / MCP servers
+- 项目级共享技能
+- 团队统一工作流
+- 仓库特有的工程约束
 
-### 禁止事项
-- ❌ 禁止 any（必须用具体类型）
-- ❌ 禁止直接操作 DOM（用 Ref 或 API）
-- ❌ 禁止内联样式（用 CSS Modules 或 Tailwind）
-- ❌ 禁止提交时不做防抖处理
-```
+凡是“只要在这个仓库里工作，大家都应该遵守”的东西，优先考虑 Project。
 
-### Python 数据分析项目
+### 4）Local：个人在某个项目里的实验和覆盖
 
-```markdown
-# XXX 数据分析项目
+适合放：
 
-## 技术栈
-- Python 3.11, pandas 2.x, numpy 2.x
-- Jupyter Notebook / JupyterLab
-- matplotlib, seaborn（可视化）
+- 你的本机特有路径和临时实验配置
+- 还没准备共享给团队的试验性规则
+- 某个仓库里的个人覆盖设置
 
-## 代码规范
-
-### Notebook 规范
-- 每个 Notebook 有明确标题（第一行 Markdown）
-- 单元格执行顺序：从上到下，禁止跳格
-- 耗时操作标注耗时：%%time
-
-### 数据处理
-- 读取数据：使用相对路径，禁止硬编码文件路径
-- 列操作：使用 .pipe() 链式调用
-- 缺失值：必须显式处理（drop/fill/标注）
-
-### 可复现性
-- 所有依赖版本固定：requirements.txt
-- 禁止 %reset（清除变量破坏可复现性）
-
-## 禁止事项
-- ❌ 禁止 print 调试后忘记删除
-- ❌ 禁止修改原始数据文件
-- ❌ 禁止硬编码阈值（写入配置文件）
-```
+Local 的意义不是“随便乱改”，而是让“我的临时需要”和“团队共享规则”解耦。
 
 ---
 
-## 🔧 .clauderc 完整配置项详解
+## 三、理解优先级，比理解文件路径更重要
 
-`.clauderc` 是 JSON 格式的配置文件，放在项目根目录（或 home 目录作为全局配置）。
+配置分层之后，还要理解它们怎么相互覆盖。
 
-### 完整配置项
+Claude Code 当前可以概括为这样的优先级顺序：
 
-```json
-{
-  "model": "sonnet",
-  "timeout": 120,
-  "maxTokens": 8192,
-  "prompt": "你是一个专业的后端工程师，...",
-  
-  "permissions": {
-    "allow": ["Read", "Write", "Bash", "Glob", "Grep", "WebFetch", "WebSearch"],
-    "deny": [
-      "Bash:rm -rf /",
-      "Bash:rm -rf /*",
-      "Bash:mkfs",
-      "Bash:dd"
-    ]
-  },
-  
-  "aliases": {
-    "review": "仔细审查代码，重点检查：安全性、异常处理、边界条件",
-    "test": "为当前文件或选中的代码生成单元测试",
-    "docs": "根据代码变更更新相关文档"
-  },
-  
-  "env": {
-    "EDITOR": "vim",
-    "GIT_EDITOR": "vim"
-  },
-  
-  "planMode": {
-    "enabled": true,
-    "autoSwitchBack": true
-  },
-  
-  "output": {
-    "showToolResults": true,
-    "showPlanProgress": true
-  }
-}
-```
+1. **Managed**（最高，不能被覆盖）
+2. **命令行参数**
+3. **Local**
+4. **Project**
+5. **User**
 
-### 各配置项详解
+这个顺序非常有工程意义。
 
-**model**：指定使用的模型
-```
-可选值：haiku, sonnet, opus
-建议：
-- 快速任务（补全、重构）：haiku
-- 标准开发任务：sonnet
-- 复杂分析、设计决策：opus
-```
+### 一个典型例子
 
-**timeout**：单次工具调用超时（秒）
-```
-默认值：60
-建议：
-- 简单操作：60
-- 复杂重构或调试：120-300
-```
+假设：
 
-**permissions**：权限控制
-```
-allow：允许的操作列表
-deny：禁止的操作（支持通配符）
+- 你在 User 层允许某个 Bash 命令；
+- 但项目在 Project 层把它禁掉了；
+- 那最终结果就是：**项目规则生效，命令被禁用**。
 
-⚠️ deny 优先于 allow
-⚠️ 永远不要把 rm -rf / 加入 allow
-```
+再比如：
 
-**aliases**：快捷命令
-```
-定义后，可以用 /review, /test, /docs 触发对应 prompt
-适合团队标准化工作流
-```
+- 你在 Project 层希望默认走 normal mode；
+- 但你这次用命令行显式指定了 plan mode；
+- 那这次 session 里，命令行覆盖项目默认值。
 
-### .clauderc 的常见配置场景
+这意味着一个非常重要的实践原则：
 
-**场景一：限制危险操作**
-```json
-{
-  "permissions": {
-    "allow": ["Read", "Write", "Bash", "Grep", "Glob"],
-    "deny": [
-      "Bash:rm -rf",
-      "Bash:mkfs",
-      "Bash:dd",
-      "Bash:>/dev/sd*"
-    ]
-  }
-}
-```
+> **安全底线放高优先级，团队协作规则放 Project，个人习惯放 User，实验性调整放 Local。**
 
-**场景二：设置默认角色**
-```json
-{
-  "prompt": "你是一个经验丰富的 Java 架构师，
-  擅长设计高性能、高可用的分布式系统。
-  在做任何设计决策前，先问自己：
-  1. 这个方案的可扩展性如何？
-  2. 失败模式是什么？
-  3. 如何测试这个设计？"
-}
-```
-
-**场景三：启用 Plan Mode 默认行为**
-```json
-{
-  "planMode": {
-    "enabled": true,
-    "autoSwitchBack": true,
-    "prompt": "先用 Plan Mode 理解问题，确认方案后再执行"
-  }
-}
-```
+只要这个原则不乱，配置体系通常就不会太乱。
 
 ---
 
-## ⚠️ 常见配置错误和解决方案
+## 四、`CLAUDE.md` 的职责：它不是“万能配置文件”，而是长期行为说明书
 
-### 错误一：CLAUDE.md 写成了 README
+很多人把 `CLAUDE.md` 写成两种极端：
 
-**症状**：Claude Code 输出了项目介绍，但开始写代码时"失智"了。
+- 要么像 README，写了一堆给人看的项目介绍；
+- 要么像垃圾场，把所有想法都往里堆。
 
-**原因**：README 是给人看的（安装步骤、使用说明），CLAUDE.md 是给 AI 看的（代码规范、验收标准）。
+这两种都不对。
 
-**解决**：
-```
-README.md → 面向人类（安装、使用）
-CLAUDE.md → 面向 AI（规范、约束）
-```
+### `CLAUDE.md` 最适合放什么
 
-不要在 CLAUDE.md 里写"如何安装"或"这个项目用 yarn 管理"。把这些留给 README。
+我更推荐把它理解成：
 
-### 错误二：把项目规范写到 .clauderc
+> **Claude 在这个项目里工作的长期说明书。**
 
-**症状**：切换项目后，Claude Code 还在用上一个项目的规范。
+它最适合承载的是：
 
-**原因**：.clauderc 是用户级/全局配置，不应该包含项目特定的内容。
+- 项目目标和上下文
+- 技术栈与基础架构约束
+- 代码规范和团队共识
+- 验收标准
+- 禁止事项
+- 常见工作流原则
 
-**解决**：.clauderc 只写工具行为配置，项目规范必须写到 CLAUDE.md。
+这些内容有个共同点：
 
-```
-❌ 错误：
-.clauderc 里写："这个项目必须用 Java 17"
+- 相对稳定
+- 与具体一次会话无关
+- 需要 Claude 在每次进入项目时都知道
 
-✅ 正确：
-CLAUDE.md 里写："本项目使用 Java 17"
-.clauderc 不涉及项目语言版本
-```
+### `CLAUDE.md` 不适合放什么
 
-### 错误三：CLAUDE.md 过长
+不适合放：
 
-**症状**：Claude Code "忘记"了一些规范，或者行为前后不一致。
+- 你的个人 API key
+- 本机路径差异
+- 会频繁变化的实验性规则
+- 复杂权限白名单
+- 需要结构化校验的系统配置
+- 临时任务清单
 
-**原因**：Claude Code 对 CLAUDE.md 有最大加载长度，超过后截断。
+这些东西更应该进 `settings.json`、Local 配置或其他系统文件，而不是把 `CLAUDE.md` 变成一个万能收纳箱。
 
-**解决**：
-1. 把最重要的规范放前 500 行
-2. 把次要规范拆分到独立文件（如 `docs/coding-standards.md`）
-3. 在 CLAUDE.md 里引用：`详见 docs/coding-standards.md`
+### 一个更准确的判断方法
 
-```markdown
-# 项目规范索引
+如果某条信息回答的是：
 
-详细规范请参考：
-- 代码规范：docs/coding-standards.md
-- API 规范：docs/api-standards.md
-- 错误码说明：docs/error-codes.md
-```
+- **“这个项目是什么、该遵守什么原则”** → 大概率写进 `CLAUDE.md`
+- **“Claude 运行时该怎么表现、允许做什么”** → 大概率写进 settings
 
-### 错误四：规范描述太抽象
-
-**症状**：Claude Code 生成的代码质量不稳定，好的时候很好，差的时候完全不符合预期。
-
-**原因**：规范没有具体的验收标准，AI 只能靠猜测。
-
-**解决**：用具体数字和可验证的标准。
-
-```
-❌ 不好："API 要高性能"
-✅ 好："API p95 响应时间 < 200ms，使用 Redis 缓存热点数据"
-
-❌ 不好："要写好测试"
-✅ 好："核心业务逻辑测试覆盖率 > 70%，使用 JUnit 5 + Mockito"
-
-❌ 不好："注意代码风格"
-✅ 好："Java 代码用 Google Java Style Guide，提交前运行 mvn spotless:check"
-```
-
-### 错误五：禁止事项描述不够精确
-
-**症状**：Claude Code 绕过了你写的禁止规则。
-
-**原因**：禁止规则不够具体，AI 找到了"合理解释"来绕过。
-
-**解决**：禁止规则要精确，附上反例。
-
-```
-❌ 不好："不要直接操作数据库"
-✅ 好："禁止在 Controller 层直接写 SQL。必须通过 XxxMapper/XxxRepository 访问数据库。
-
-反例（禁止）：
-@Controller
-public class OrderController {
-    @Autowired JdbcTemplate jdbc;
-    jdbc.query("SELECT * FROM orders"); // ❌ 禁止
-}
-
-正例：
-@Service
-public class OrderService {
-    @Autowired private OrderMapper orderMapper;
-    orderMapper.selectById(id); // ✅ 正确
-}
-```
+这两个问题分清楚，`CLAUDE.md` 的边界就清楚了。
 
 ---
 
-## 👥 团队共享配置策略
+## 五、`settings.json` 的职责：系统行为、权限和默认模式
 
-### 方式一：Git 模板仓库
+如果说 `CLAUDE.md` 解决的是“认知边界”，那 `settings.json` 解决的就是“运行边界”。
 
-创建一个公司内部的模板仓库：
+它更像 Claude Code 的系统控制面。
 
-```
-company-claude-templates/
-├── java-spring-boot/
-│   └── CLAUDE.md
-├── react-ts/
-│   └── CLAUDE.md
-└── python-data/
-    └── CLAUDE.md
-```
+### 适合放在 `settings.json` 里的内容
 
-新项目初始化时：
-```bash
-git init
-git remote add template git@github.com:your-org/company-claude-templates.git
-git sparse-checkout set java-spring-boot
-git pull template main
-```
+典型包括：
 
-### 方式二：Git Hook 强制检查
+- permissions allow / deny
+- 默认 permission mode
+- 环境变量
+- hooks
+- 一些系统级行为设置
+- 团队共享或本地覆盖的运行策略
 
-在 `pre-commit` hook 里检查 CLAUDE.md 是否存在：
+举个最常见的例子：
 
-```bash
-#!/bin/bash
-# .git/hooks/pre-commit
+- “所有 public API 必须有幂等设计” → 这是项目原则，写 `CLAUDE.md`
+- “禁止读取 `.env`，禁止 Bash 执行 `curl *`” → 这是运行权限，写 settings
 
-if [ ! -f CLAUDE.md ]; then
-    echo "❌ 错误：项目根目录必须包含 CLAUDE.md"
-    echo "请参考：https://github.com/your-org/company-claude-templates"
-    exit 1
-fi
-```
+### 为什么这层特别重要
 
-### 方式三：AI 辅助生成初始 CLAUDE.md
+因为很多团队会犯一个错误：
 
-Claude Code 可以根据现有代码帮你生成 CLAUDE.md：
+把“应该由系统控制的行为”，写成“提示词里的原则”。
 
-```bash
-# 在项目根目录执行
-claude --print "分析这个项目的代码结构、技术栈和代码风格，
-生成一个 CLAUDE.md 文件。
+例如你在 `CLAUDE.md` 里写：
 
-要求：
-1. 识别主要技术栈
-2. 总结代码规范（命名、异常处理、测试等）
-3. 识别架构模式
-4. 输出完整的 CLAUDE.md 内容"
-```
+- 不要读 secrets
+- 不要执行危险命令
+
+这当然有帮助，但这仍然偏“软约束”。
+
+如果这件事真的重要，更稳的做法应该是：
+
+- 原则写进 `CLAUDE.md`
+- 真正的边界写进 `permissions.deny`
+
+也就是：
+
+> **认知上提醒一次，系统上再拦一次。**
+
+这才是工程化，而不是只靠模型“自觉”。
 
 ---
 
-## 🚀 进阶：环境差异化配置
+## 六、Skills 的职责：别再把“复用工作流”理解成 alias 了
 
-### 问题
+这几年一个很容易过时的认知是：
 
-同一项目，在开发、测试、生产环境需要不同的规范（如日志级别、调试开关）。
+“我给 Claude 配几个快捷命令 / aliases，不就等于工作流复用了？”
 
-### 方案一：CLAUDE.md 条件加载
+现在这个理解已经明显不够了。
 
-在 CLAUDE.md 里用标记区分：
+根据官方最新方向，自定义命令已经逐步并入 **Skills** 体系。旧的命令方式可能仍然兼容，但真正更有扩展性的路径，是 Skill。
 
-```markdown
-# XXX 订单系统
+### Skill 比“命令别名”强在哪
 
-## 环境配置
+一个 Skill 不只是把一句 prompt 起个名字，它可以有：
 
-<!-- DEV_ONLY_START -->
-## 开发环境
-- DEBUG 日志：开启
-- 模拟支付：可用
-<!-- DEV_ONLY_END -->
+- `SKILL.md` 主说明
+- supporting files
+- 示例输出
+- 脚本
+- 更清晰的适用场景描述
+- 被 Claude 自动发现和自动调用的能力
 
-<!-- PROD_ONLY_START -->
-## 生产环境
-- DEBUG 日志：关闭
-- 真实支付：必须
-- 禁止：console.log
-<!-- PROD_ONLY_END -->
-```
+换句话说：
 
-在启动 Claude Code 时，告诉它当前环境：
-```
-claude --print "当前环境：production"
-```
+> **Skill 更像“可复用能力模块”，而不是“命令缩写”。**
 
-### 方案二：多文件分层
+### 哪些东西适合写成 Skill
 
-```
-项目/
-├── CLAUDE.md              ← 基础配置（所有环境共享）
-├── CLAUDE.dev.md          ← 开发环境追加配置
-├── CLAUDE.test.md         ← 测试环境追加配置
-└── CLAUDE.prod.md         ← 生产环境追加配置
-```
+例如：
 
-CLAUDE.md 里引用：
-```markdown
-## 环境配置
+- `/review-pr`
+- `/write-java-test`
+- `/analyze-slow-sql`
+- `/summarize-module`
+- `/prepare-release-note`
 
-开发环境补充：参见 CLAUDE.dev.md
-测试环境补充：参见 CLAUDE.test.md
-生产环境补充：参见 CLAUDE.prod.md
-```
+这些都不只是“一句 prompt”，而是一个相对稳定、可多次复用、最好还能携带模板与参考资料的工作流。
 
-### 方案三：.env 文件 + CLAUDE.md 联动
+### Skill 最适合解决什么问题
 
-```markdown
-<!-- 读取 .env 获取当前环境 -->
-<!-- 如果 NODE_ENV=production，执行以下约束：-->
-- 禁止任何 console.* 调用
-- 所有 API 必须有超时设置
-- 错误不能返回详细堆栈（必须转为通用错误码）
-```
+它解决的是：
+
+- 团队如何共享高质量提示工作流
+- 一个复杂流程如何重复调用
+- Claude 如何在合适的时候自动加载特定能力
+
+所以今天更推荐的思路，不是：
+
+- “我在配置里做几个 alias”
+
+而是：
+
+- “我把可复用工作流沉淀成 Skill”
+
+这两者在工程可维护性上差很多。
 
 ---
 
-## 总结：CLAUDE.md 配置检查清单
+## 七、MCP 的职责：连接外部世界，而不是替代项目规范
 
-创建或审核 CLAUDE.md 时，对照这个清单：
+MCP 也经常被误放位置。
 
-```
-□ 1. 项目概述清晰（一句话说明项目是什么）
-□ 2. 技术栈明确（语言、框架、数据库、关键中间件）
-□ 3. 代码规范具体（不是抽象原则，是可执行的规则）
-□ 4. 规范有验收标准（数字化的指标）
-□ 5. 禁止事项明确（附反例）
-□ 6. 工作流清晰（分支、Commit、PR）
-□ 7. 架构决策记录（关键技术选择）
-□ 8. 长度合理（< 500 行，核心内容在前）
-□ 9. 按项目类型定制（不是通用模板）
-□ 10. 与 README 分工明确（不重复）
-```
+有的人把 MCP 配得很热闹，结果 Claude 还是总做错事；有的人把所有项目上下文都想塞给 MCP，结果配置复杂度越来越高。
 
-**CLAUDE.md 不是一次性的配置**。随着项目演进，规范会变化，CLAUDE.md 也应该定期更新。建议每个 sprint 或每个版本迭代时回顾一次 CLAUDE.md，确保它仍然准确反映项目的实际规范。
+原因通常是：**没有把 MCP 的职责想清楚。**
+
+MCP 更适合回答的问题是：
+
+- Claude 可以访问哪些外部系统？
+- 如何读取 Jira / GitHub / 文档系统 / 内部平台？
+- 如何把结果回写到外部系统？
+
+它不适合替代的是：
+
+- 项目规范
+- 团队编码共识
+- 运行权限边界
+
+所以我更推荐这样理解：
+
+- `CLAUDE.md`：项目原则与上下文
+- settings：运行策略与权限边界
+- Skills：可复用工作流
+- MCP：外部系统连接层
+
+这四层各司其职，系统才稳定。
 
 ---
 
-## 相关资源
+## 八、一个最实用的分层原则：四类信息，分别放到四个地方
 
-- [Claude Code 官方文档](https://docs.anthropic.com/claude-code)
-- [MCP 协议生态](./mcp-ecosystem.md)
-- [多 Agent 编排实战](./multi-agent-orchestration.md)
-- [AI 测试工具大全](./ai-testing-tools.md)
+如果你觉得前面还是抽象，我给你一个非常落地的分法。
+
+### 第一类：长期规则 → `CLAUDE.md`
+
+例如：
+
+- 代码风格
+- 架构边界
+- 事务规范
+- API 约定
+- 测试要求
+- 禁止事项
+
+### 第二类：运行行为 → `settings.json`
+
+例如：
+
+- 权限 allow / deny
+- 默认进入 plan mode
+- hooks
+- 环境变量
+- 运行时限制
+
+### 第三类：复用流程 → Skills
+
+例如：
+
+- PR 审查流程
+- 故障分析流程
+- 单测生成流程
+- 发布说明整理流程
+
+### 第四类：外部接入 → MCP
+
+例如：
+
+- GitHub
+- Jira
+- Confluence / Notion
+- 日志平台
+- 监控平台
+
+这套分法最大的优点是：
+
+- 以后团队知道该往哪里加东西
+- 你不会把所有需求都堆到同一个文件
+- 配置可以持续增长，但不会迅速失控
+
+---
+
+## 九、Java 后端团队的一套推荐目录结构
+
+如果你是 Java 后端团队，我更推荐从下面这样的结构开始：
+
+```text
+project-root/
+├── CLAUDE.md
+├── .claude/
+│   ├── settings.json
+│   ├── settings.local.json        # 本地覆盖，不提交
+│   ├── skills/
+│   │   ├── review-java-pr/
+│   │   │   └── SKILL.md
+│   │   ├── write-service-tests/
+│   │   │   └── SKILL.md
+│   │   └── trace-transaction/
+│   │       └── SKILL.md
+│   └── agents/
+│       ├── code-reviewer.md
+│       └── debugger.md
+├── .mcp.json
+├── docs/
+│   ├── api-standards.md
+│   ├── error-codes.md
+│   └── database-conventions.md
+└── src/
+```
+
+### 这个结构为什么更稳
+
+#### `CLAUDE.md`
+放核心规则：
+
+- 本项目使用 Java 17 / Spring Boot 3
+- 事务在 Service 层管理
+- Controller 禁止承载业务逻辑
+- 日志禁止打印敏感字段
+- 核心链路必须补单测
+
+#### `.claude/settings.json`
+放仓库级运行规则：
+
+- 禁止读取 `.env`
+- 禁止危险 Bash 模式
+- 默认 plan mode
+- 文件改动后触发轻量检查
+
+#### `.claude/skills/`
+放团队高频可复用工作流：
+
+- 审查 Java PR
+- 生成 Service 层单元测试
+- 排查慢 SQL
+- 检查异常处理是否规范
+
+#### `.mcp.json`
+放项目级外部连接：
+
+- GitHub / issue 系统 / 文档系统
+- 团队内共享的工具接入
+
+这样以后团队里有人加一条新规则，不会再陷入“这条到底该写到哪”的混乱。
+
+---
+
+## 十、最容易犯的 6 个错误
+
+### 错误一：把 `CLAUDE.md` 写成 README
+
+README 是给人快速理解项目的，`CLAUDE.md` 是给 Claude 执行工作时长期遵守的。
+
+两者可以相关，但不应该混为一谈。
+
+### 错误二：把项目规范写进 User 层
+
+结果就是你切项目以后，Claude 还带着上一个仓库的习惯。
+
+项目规范应该尽量沉淀在仓库里，而不是个人全局配置里。
+
+### 错误三：把安全底线只写在 prompt 里
+
+“不要读 secrets”如果真的重要，就应该进入 permissions deny，而不是只靠提醒。
+
+### 错误四：把 Skill 当成 alias
+
+这样你会低估它的能力，也会让工作流沉淀始终停留在低水平复用阶段。
+
+### 错误五：所有东西都往 `CLAUDE.md` 里堆
+
+结果通常是：
+
+- 越来越长
+- 越来越难维护
+- 重要规则淹没在细节里
+
+### 错误六：团队共享规则和个人实验不分层
+
+本来只是你本机的一个试验性 Hook，结果直接进了项目配置；或者反过来，本该全团队遵守的规则，却只放在你自己的 Local。
+
+这两种都很常见，也都很伤协作效率。
+
+---
+
+## 十一、一个简单但高价值的配置审计清单
+
+如果你准备整理团队的 Claude Code 配置，可以按下面这个顺序审一次：
+
+### 1）`CLAUDE.md` 审什么
+
+- 项目目标是否清楚
+- 技术栈是否准确
+- 核心编码规范是否可执行
+- 验收标准是否明确
+- 禁止事项是否具体
+
+### 2）Project settings 审什么
+
+- 是否有真正该共享的权限规则
+- 是否把团队工作流接成了 hooks / 默认模式
+- 是否有不该共享的个人路径、个人习惯混进来
+
+### 3）Local settings 审什么
+
+- 是否只是个人覆盖与实验性配置
+- 是否不小心承担了团队应共享的规则
+
+### 4）Skills 审什么
+
+- 哪些高频动作已经值得沉淀成 skill
+- skill 的说明是否足够具体
+- 是否能被团队理解和复用
+
+### 5）MCP 审什么
+
+- 接入的外部系统是否真的高频有用
+- 权限是否合理
+- 是否把不该放在 MCP 的项目规则错误塞进去
+
+只要能把这 5 步跑一遍，很多配置混乱问题都会明显减少。
+
+---
+
+## 十二、结语：真正成熟的配置，不是文件更多，而是边界更清楚
+
+很多人一听“配置工程化”，第一反应是：
+
+- 会不会更复杂？
+- 会不会又多出很多文件？
+
+但真正成熟的配置工程化，从来不是“文件数量变多”，而是：
+
+**每种信息终于被放到了它该在的位置。**
+
+这会带来几个非常实际的好处：
+
+- Claude 在不同项目间不再串味
+- 团队规则终于能稳定共享
+- 安全边界不再只靠提示词维持
+- 高价值工作流可以沉淀成 Skills
+- 外部系统接入和项目规范不再混在一起
+
+这也是我这轮重新学习后最明确的一个结论：
+
+> **今天真正值得花时间优化的，不只是 `CLAUDE.md` 本身，而是整个 Claude Code 配置架构。**
+
+如果你现在要开始整理自己的配置，我建议按这个顺序来：
+
+1. 先收敛 `CLAUDE.md`，只保留长期有效的项目规则
+2. 再把权限和运行行为迁到 `settings.json`
+3. 把重复使用的 prompt 升级成 Skills
+4. 最后再接入真正高频有价值的 MCP 系统
+
+这样搭出来的，不是一堆零散配置，而是一套能长期演进的 Claude Code 工程底座。
+
+这比单纯“写一个更长的 `CLAUDE.md`”，重要得多。
